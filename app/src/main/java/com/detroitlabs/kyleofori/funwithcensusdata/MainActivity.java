@@ -1,5 +1,6 @@
 package com.detroitlabs.kyleofori.funwithcensusdata;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -13,12 +14,13 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
-
     private static final int TRANSPARENCY_MAX = 100;
     private static final LatLng NEWARK = new LatLng(40.714086, -74.228697);
 
@@ -71,6 +73,12 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 .position(NEWARK, 8600f, 6500f));
 
         mTransparencyBar.setOnSeekBarChangeListener(this);
+
+        Polygon polygon = mMap.addPolygon(new PolygonOptions()
+                .add(new LatLng(35, -90), new LatLng(36, -89), new LatLng(36, -81), new LatLng(35, -84))
+                .strokeColor(Color.GREEN)
+                .fillColor(Color.YELLOW));
+
     }
 
     @Override
