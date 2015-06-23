@@ -62,6 +62,19 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
         boundaryDataReceiver.setReceiver(null);
     }
 
+    @Override
+    public void onReceiveResult(int resultCode, Bundle resultData) {
+        switch (resultCode) {
+            case QueryService.STATUS_RUNNING:
+                break;
+            case QueryService.STATUS_FINISHED:
+                List results = resultData.getParcelableArrayList("results");
+                break;
+            case QueryService.STATUS_ERROR:
+                break;
+        }
+    }
+
     private void setUpMapIfNeeded() {
         if (mMap == null) {
             mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
@@ -94,18 +107,5 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
     public void switchImage(View view) {
         mCurrentEntry = (mCurrentEntry + 1) % mImages.size();
         mGroundOverlay.setImage(mImages.get(mCurrentEntry));
-    }
-
-    @Override
-    public void onReceiveResult(int resultCode, Bundle resultData) {
-        switch (resultCode) {
-            case QueryService.STATUS_RUNNING:
-                break;
-            case QueryService.STATUS_FINISHED:
-                List results = resultData.getParcelableArrayList("results");
-                break;
-            case QueryService.STATUS_ERROR:
-                break;
-        }
     }
 }

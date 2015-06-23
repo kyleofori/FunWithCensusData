@@ -30,7 +30,7 @@ public class QueryService extends IntentService {
         if(command.equals("query")) {
             receiver.send(STATUS_RUNNING, Bundle.EMPTY);
             try {
-                // get some data or something
+                // get some data or something. I think JSON data would be pulled and parsed here.
                 b.putParcelableArrayList("results", results);
                 receiver.send(STATUS_FINISHED, b);
             } catch(Exception e) {
