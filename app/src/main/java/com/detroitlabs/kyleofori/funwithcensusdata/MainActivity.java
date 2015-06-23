@@ -25,6 +25,8 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
 
     public BoundaryDataReceiver boundaryDataReceiver;
 
+    private List<LatLng> points = new ArrayList<>();
+
     private static final LatLng NEWARK = new LatLng(40.714086, -74.228697);
     private final List<BitmapDescriptor> mImages = new ArrayList<BitmapDescriptor>();
 
@@ -41,6 +43,8 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
 
         setContentView(R.layout.activity_main);
 
+        createPoints();
+
         setUpMapIfNeeded();
 
         final Intent intent = new Intent(Intent.ACTION_SYNC, null, this, QueryService.class);
@@ -48,6 +52,13 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
         intent.putExtra("command", "query");
         startService(intent);
 
+    }
+
+    private void createPoints() {
+        points.add(new LatLng(35, -90));
+        points.add(new LatLng(36.2, -89));
+        points.add(new LatLng(36.2, -81));
+        points.add(new LatLng(35, -84));
     }
 
     @Override
@@ -98,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
                 .position(NEWARK, 8600f, 6500f));
 
         Polygon polygon = mMap.addPolygon(new PolygonOptions()
-                .add(new LatLng(35, -90), new LatLng(36, -89), new LatLng(36, -81), new LatLng(35, -84))
+                .addAll(points)
                 .strokeColor(Color.GREEN)
                 .fillColor(Color.YELLOW));
 
