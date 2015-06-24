@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
 
     private List<LatLng> points = new ArrayList<>();
 
-    private static final LatLng NEWARK = new LatLng(40.714086, -74.228697);
+    private static final LatLng TENNESSEE = new LatLng(35, -90);
     private final List<BitmapDescriptor> mImages = new ArrayList<BitmapDescriptor>();
 
     private GoogleMap mMap;
@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
 
         setContentView(R.layout.activity_main);
 
-        createPoints();
+        initializePoints();
 
         setUpMapIfNeeded();
 
@@ -54,11 +54,10 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
 
     }
 
-    private void createPoints() {
-        points.add(new LatLng(35, -90));
-        points.add(new LatLng(36.2, -89));
-        points.add(new LatLng(36.2, -81));
-        points.add(new LatLng(35, -84));
+    private void initializePoints() {
+        points.add(new LatLng(36.5, -89.4));
+        points.add(new LatLng(39.0, -84.6));
+        points.add(new LatLng(37.0, -82.7));
     }
 
     @Override
@@ -79,7 +78,8 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
             case QueryService.STATUS_RUNNING:
                 break;
             case QueryService.STATUS_FINISHED:
-                List results = resultData.getParcelableArrayList("results");
+                points = resultData.getParcelableArrayList("results");
+                setUpMap();
                 break;
             case QueryService.STATUS_ERROR:
                 break;
@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
     }
 
     private void setUpMap() {
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(NEWARK, 11));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(TENNESSEE, 5));
 
         mImages.clear();
         mImages.add(BitmapDescriptorFactory.fromResource(R.drawable.newark_nj_1922));
@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
         mCurrentEntry = 0;
         mGroundOverlay = mMap.addGroundOverlay(new GroundOverlayOptions()
                 .image(mImages.get(mCurrentEntry)).anchor(0, 1)
-                .position(NEWARK, 8600f, 6500f));
+                .position(TENNESSEE, 8600f, 6500f));
 
         Polygon polygon = mMap.addPolygon(new PolygonOptions()
                 .addAll(points)
