@@ -111,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
         Polygon polygon = mMap.addPolygon(new PolygonOptions()
                 .addAll(points)
                 .strokeColor(Color.GREEN)
+                .strokeWidth(2)
                 .fillColor(Color.YELLOW));
 
     }
