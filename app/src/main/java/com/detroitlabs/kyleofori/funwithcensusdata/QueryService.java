@@ -8,6 +8,9 @@ import android.os.Parcelable;
 import android.os.ResultReceiver;
 import android.util.Log;
 
+import com.detroitlabs.kyleofori.funwithcensusdata.api.OutlinesApi;
+import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
+import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel.FeatureList.Feature.Geometry.CoordinatesL3;
 import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONArray;
@@ -25,6 +28,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import retrofit.Callback;
+import retrofit.RestAdapter;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+
 /**
  * Created by kyleofori on 6/19/15.
  */
@@ -33,10 +41,10 @@ public class QueryService extends IntentService {
 
     public static final String LOG_TAG = QueryService.class.getSimpleName();
     final static int DC = 5;
-    final static String API = "http://eric.clst.org";
     final static int STATUS_FINISHED = 1;
     final static int STATUS_RUNNING = 0;
     final static int STATUS_ERROR = -1;
+    public static final String API_BASE_URL = "http://eric.clst.org";
     private List<LatLng> results = new ArrayList<>();
 
     public QueryService() {
@@ -56,7 +64,8 @@ public class QueryService extends IntentService {
             receiver.send(STATUS_RUNNING, Bundle.EMPTY);
             try {
                 // get some data or something. I think JSON data would be pulled and parsed here.
-                makeHttpCall();
+//                makeHttpCall();
+                makeHttpCallWithRetrofit();
                 createPoints();
                 b.putParcelableArrayList("results", (ArrayList<? extends Parcelable>) results);
                 receiver.send(STATUS_FINISHED, b);
@@ -98,6 +107,35 @@ public class QueryService extends IntentService {
         } finally {
             httpURLConnection.disconnect();
         }
+    }
+
+    protected void makeHttpCallWithRetrofit(){
+        RestAdapter restAdapter = new RestAdapter.Builder()
+                .setEndpoint(API_BASE_URL)
+                .build();
+
+        OutlinesApi api = restAdapter.create(OutlinesApi.class);
+
+        Callback callback = new Callback() {
+            @Override
+            public void success(Object o, Response response) {
+                OutlinesModel model = (OutlinesModel) o;
+                List<CoordinatesL3.CoordinatesL2> dcOutline = model.getFeatureList().findFeatureByName("District of Columbia").getGeometry().getCompleteOutline().getLandmasses();
+
+                for(CoordinatesL3.CoordinatesL2 landmassCoordinatePairObject: dcOutline) {
+                    double[] coordinatePair = landmassCoordinatePairObject.getCoordinatePair();
+                    double lat = coordinatePair[0];
+                    double lng = coordinatePair[1];
+                    results.add(new LatLng(lat, lng));
+                }
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+            }
+        };
+
+        api.getOutlinesModel(callback);
     }
 
     private void parseJsonString(String jsonString) {
