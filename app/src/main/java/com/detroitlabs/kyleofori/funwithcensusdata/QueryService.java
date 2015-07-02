@@ -33,7 +33,7 @@ public class QueryService extends IntentService {
 
     public static final String LOG_TAG = QueryService.class.getSimpleName();
     final static int DC = 5;
-
+    final static String API = "http://eric.clst.org";
     final static int STATUS_FINISHED = 1;
     final static int STATUS_RUNNING = 0;
     final static int STATUS_ERROR = -1;
