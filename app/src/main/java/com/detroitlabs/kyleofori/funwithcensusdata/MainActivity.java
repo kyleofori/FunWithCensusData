@@ -1,12 +1,13 @@
 package com.detroitlabs.kyleofori.funwithcensusdata;
 
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import com.detroitlabs.kyleofori.funwithcensusdata.api.OutlinesApi;
+import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -19,9 +20,17 @@ import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import retrofit.Callback;
+import retrofit.RestAdapter;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+
 public class MainActivity extends AppCompatActivity implements BoundaryDataReceiver.Receiver {
+
+    public static final String API_BASE_URL = "http://eric.clst.org";
 
     public BoundaryDataReceiver boundaryDataReceiver;
 
@@ -47,10 +56,12 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
 
         setUpMapIfNeeded();
 
-        final Intent intent = new Intent(Intent.ACTION_SYNC, null, this, QueryService.class);
-        intent.putExtra("receiver", boundaryDataReceiver);
-        intent.putExtra("command", "query");
-        startService(intent);
+        makeHttpCallWithRetrofit();
+
+//        final Intent intent = new Intent(Intent.ACTION_SYNC, null, this, QueryService.class);
+//        intent.putExtra("receiver", boundaryDataReceiver);
+//        intent.putExtra("command", "query");
+//        startService(intent);
 
     }
 
@@ -86,6 +97,43 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
         }
     }
 
+    protected void makeHttpCallWithRetrofit(){
+        RestAdapter restAdapter = new RestAdapter.Builder()
+                .setEndpoint(API_BASE_URL)
+                .build();
+
+        OutlinesApi api = restAdapter.create(OutlinesApi.class);
+
+        Callback callback = new Callback<OutlinesModel>() {
+            @Override
+            public void success(OutlinesModel model, Response response) {
+                Collection<OutlinesModel.Feature> features = model.getFeatures();
+                OutlinesModel.Feature featureINeed = null;
+                for(OutlinesModel.Feature f: features) {
+                    if(f.getProperties().getPoliticalUnitName().equals("District of Columbia")) {
+                        featureINeed = f;
+                    }
+                }
+                OutlinesModel.Feature.Geometry geometry = featureINeed.getGeometry();
+                OutlinesModel.Feature.Geometry.CoordinatesL3 completeOutline = geometry.getCompleteOutline();
+                OutlinesModel.Feature.Geometry.CoordinatesL3.CoordinatesL2[] landmasses = completeOutline.getLandmasses();
+
+                for(OutlinesModel.Feature.Geometry.CoordinatesL3.CoordinatesL2 landmassCoordinatePairObject: landmasses) {
+                    double[] coordinatePair = landmassCoordinatePairObject.getCoordinatePair();
+                    double lat = coordinatePair[0];
+                    double lng = coordinatePair[1];
+                    points.add(new LatLng(lat, lng));
+                }
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                error.printStackTrace();
+            }
+        };
+
+        api.getOutlinesModel(callback);
+    }
     private void setUpMapIfNeeded() {
         if (mMap == null) {
             mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
