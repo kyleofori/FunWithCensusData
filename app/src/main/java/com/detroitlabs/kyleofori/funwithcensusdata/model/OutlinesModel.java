@@ -2,16 +2,16 @@ package com.detroitlabs.kyleofori.funwithcensusdata.model;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.util.Collection;
+import java.util.ArrayList;
 
 /**
  * Created by kyleofori on 7/1/15.
  */
 public class OutlinesModel {
 
-    private Collection<Feature> features;
+    private ArrayList<Feature> features;
 
-    public Collection<Feature> getFeatures() {
+    public ArrayList<Feature> getFeatures() {
         return features;
     }
 
@@ -39,27 +39,12 @@ public class OutlinesModel {
 
         public class Geometry {
             @SerializedName("coordinates")
-            private CoordinatesL3 completeOutline;
+            private double[][][] allLandmasses;
 
-            public CoordinatesL3 getCompleteOutline() {
-                return completeOutline;
+            public double[][][] getAllLandmasses() {
+                return allLandmasses;
             }
 
-            public class CoordinatesL3 {
-                private CoordinatesL2[] landmasses;
-
-                public CoordinatesL2[] getLandmasses() {
-                    return landmasses;
-                }
-
-                public class CoordinatesL2 {
-                    private double[] coordinatePair;
-
-                    public double[] getCoordinatePair() {
-                        return coordinatePair;
-                    }
-                }
-            }
         }
     }
 }
