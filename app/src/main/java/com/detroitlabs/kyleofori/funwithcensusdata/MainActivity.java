@@ -20,7 +20,6 @@ import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import retrofit.Callback;
@@ -107,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
         Callback callback = new Callback<OutlinesModel>() {
             @Override
             public void success(OutlinesModel model, Response response) {
-                Collection<OutlinesModel.Feature> features = model.getFeatures();
+                ArrayList<OutlinesModel.Feature> features = model.getFeatures();
                 OutlinesModel.Feature featureINeed = null;
                 for(OutlinesModel.Feature f: features) {
                     if(f.getProperties().getPoliticalUnitName().equals("District of Columbia")) {
@@ -115,11 +114,13 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
                     }
                 }
                 OutlinesModel.Feature.Geometry geometry = featureINeed.getGeometry();
-                OutlinesModel.Feature.Geometry.CoordinatesL3 completeOutline = geometry.getCompleteOutline();
-                OutlinesModel.Feature.Geometry.CoordinatesL3.CoordinatesL2[] landmasses = completeOutline.getLandmasses();
+                double[][][] allLandmasses = geometry.getAllLandmasses();
 
-                for(OutlinesModel.Feature.Geometry.CoordinatesL3.CoordinatesL2 landmassCoordinatePairObject: landmasses) {
-                    double[] coordinatePair = landmassCoordinatePairObject.getCoordinatePair();
+                double[][] mainland = allLandmasses[0];
+
+
+
+                for(double[] coordinatePair: mainland) {
                     double lat = coordinatePair[0];
                     double lng = coordinatePair[1];
                     points.add(new LatLng(lat, lng));
