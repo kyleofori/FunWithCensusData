@@ -32,11 +32,12 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
     public static final String API_BASE_URL = "http://eric.clst.org";
     public static final String DC = "District of Columbia";
     public static final String IA = "Iowa";
+    public static final String MI = "Michigan";
 
     public BoundaryDataReceiver boundaryDataReceiver;
 
     private List<LatLng> points = new ArrayList<>();
-    private List<LatLng> dcPoints = new ArrayList<>();
+    private List<LatLng> addedPoints = new ArrayList<>();
 
     private boolean firstPassDone = false;
 
@@ -114,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
                 ArrayList<OutlinesModel.Feature> features = model.getFeatures();
                 OutlinesModel.Feature featureINeed = null;
                 for(OutlinesModel.Feature f: features) {
-                    if(f.getProperties().getPoliticalUnitName().equals(IA)) {
+                    if(f.getProperties().getPoliticalUnitName().equals(MI)) {
                         featureINeed = f;
                     }
                 }
@@ -122,15 +123,28 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
                 Object coordinates = geometry.getCoordinates();
 
                 if(geometry.getType().equals("Polygon")) {
-                    List<List<List<Double>>> dcOutline = (ArrayList<List<List<Double>>>) coordinates;
+                    List<List<List<Double>>> polygonOutline = (ArrayList<List<List<Double>>>) coordinates;
 
-                    for (List<Double> coordinatePair : dcOutline.get(0)) {
+                    for (List<Double> coordinatePair : polygonOutline.get(0)) {
                         double lng = coordinatePair.get(0);
                         double lat = coordinatePair.get(1);
-                        dcPoints.add(new LatLng(lat, lng));
+                        addedPoints.add(new LatLng(lat, lng));
+                    }
+
+                    setUpMap();
+                } else if (geometry.getType().equals("MultiPolygon")) {
+                    List<List<List<List<Double>>>> multiPolygonOutline = (ArrayList<List<List<List<Double>>>>) coordinates;
+
+                    for(List<List<List<Double>>> polygonOutline: multiPolygonOutline) {
+                        for (List<Double> coordinatePair : polygonOutline.get(0)) {
+                            double lng = coordinatePair.get(0);
+                            double lat = coordinatePair.get(1);
+                            addedPoints.add(new LatLng(lat, lng));
+                        }
+
+                        setUpMap();
                     }
                 }
-                setUpMap();
             }
 
             @Override
@@ -171,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
 
         if(firstPassDone) {
             Polygon dcPolygon = mMap.addPolygon(new PolygonOptions()
-                    .addAll(dcPoints)
+                    .addAll(addedPoints)
                     .strokeColor(Color.RED)
                     .strokeWidth(2)
                     .fillColor(Color.MAGENTA));
