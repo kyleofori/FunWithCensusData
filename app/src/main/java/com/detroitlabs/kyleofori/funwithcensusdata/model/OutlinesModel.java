@@ -38,12 +38,21 @@ public class OutlinesModel {
         }
 
         public class Geometry {
-            @SerializedName("coordinates")
-            private double[][][] allLandmasses;
 
-            public double[][][] getAllLandmasses() {
-                return allLandmasses;
-            }
+//            public int getDepthOfCoordinatesArray() {
+//                if(/*the coordinates array text starts with "[[[[" */) {
+//                    return 4;
+//                } else if (/*the coordinates array text starts with "[[[" */) {
+//                    return 3;
+//                }
+//            }
+
+//            @SerializedName("coordinates")
+//            private double[][][] allLandmasses;
+//
+//            public double[][][] getAllLandmasses() {
+//                return allLandmasses;
+//            }
 
         }
     }
