@@ -34,6 +34,9 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
     public BoundaryDataReceiver boundaryDataReceiver;
 
     private List<LatLng> points = new ArrayList<>();
+    private List<LatLng> dcPoints = new ArrayList<>();
+
+    private boolean firstPassDone = false;
 
     private static final LatLng TENNESSEE = new LatLng(35, -90);
     private final List<BitmapDescriptor> mImages = new ArrayList<BitmapDescriptor>();
@@ -122,10 +125,12 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
 
 
                 for(List<Double> coordinatePair: dcOutline.get(0)) {
-                    double lat = coordinatePair.get(0);
-                    double lng = coordinatePair.get(1);
-                    points.add(new LatLng(lat, lng));
+                    double lng = coordinatePair.get(0);
+                    double lat = coordinatePair.get(1);
+                    dcPoints.add(new LatLng(lat, lng));
                 }
+
+                setUpMap();
             }
 
             @Override
@@ -164,6 +169,15 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
                 .strokeWidth(2)
                 .fillColor(Color.YELLOW));
 
+        if(firstPassDone) {
+            Polygon dcPolygon = mMap.addPolygon(new PolygonOptions()
+                    .addAll(dcPoints)
+                    .strokeColor(Color.RED)
+                    .strokeWidth(2)
+                    .fillColor(Color.MAGENTA));
+        }
+
+        firstPassDone = true;
     }
 
     public void switchImage(View view) {
