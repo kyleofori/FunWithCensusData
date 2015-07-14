@@ -114,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
                     }
                 }
                 OutlinesModel.Feature.Geometry geometry = featureINeed.getGeometry();
+                Object coordinates = geometry.getCoordinates();
 //                double[][][] allLandmasses = geometry.getAllLandmasses();
 
 //                double[][] mainland = allLandmasses[0];

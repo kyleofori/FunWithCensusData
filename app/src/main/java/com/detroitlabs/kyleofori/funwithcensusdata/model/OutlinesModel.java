@@ -8,7 +8,6 @@ import java.util.ArrayList;
  * Created by kyleofori on 7/1/15.
  */
 public class OutlinesModel {
-
     private ArrayList<Feature> features;
 
     public ArrayList<Feature> getFeatures() {
@@ -38,22 +37,11 @@ public class OutlinesModel {
         }
 
         public class Geometry {
+            private Object coordinates;
 
-//            public int getDepthOfCoordinatesArray() {
-//                if(/*the coordinates array text starts with "[[[[" */) {
-//                    return 4;
-//                } else if (/*the coordinates array text starts with "[[[" */) {
-//                    return 3;
-//                }
-//            }
-
-//            @SerializedName("coordinates")
-//            private double[][][] allLandmasses;
-//
-//            public double[][][] getAllLandmasses() {
-//                return allLandmasses;
-//            }
-
+            public Object getCoordinates() {
+                return coordinates;
+            }
         }
     }
 }
