@@ -37,6 +37,12 @@ public class OutlinesModel {
         }
 
         public class Geometry {
+            private String type;
+
+            public String getType() {
+                return type;
+            }
+
             private Object coordinates;
 
             public Object getCoordinates() {

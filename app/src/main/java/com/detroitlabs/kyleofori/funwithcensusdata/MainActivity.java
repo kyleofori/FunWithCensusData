@@ -30,6 +30,8 @@ import retrofit.client.Response;
 public class MainActivity extends AppCompatActivity implements BoundaryDataReceiver.Receiver {
 
     public static final String API_BASE_URL = "http://eric.clst.org";
+    public static final String DC = "District of Columbia";
+    public static final String IA = "Iowa";
 
     public BoundaryDataReceiver boundaryDataReceiver;
 
@@ -112,24 +114,22 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
                 ArrayList<OutlinesModel.Feature> features = model.getFeatures();
                 OutlinesModel.Feature featureINeed = null;
                 for(OutlinesModel.Feature f: features) {
-                    if(f.getProperties().getPoliticalUnitName().equals("District of Columbia")) {
+                    if(f.getProperties().getPoliticalUnitName().equals(IA)) {
                         featureINeed = f;
                     }
                 }
                 OutlinesModel.Feature.Geometry geometry = featureINeed.getGeometry();
                 Object coordinates = geometry.getCoordinates();
-                List<List<List<Double>>> dcOutline = (ArrayList<List<List<Double>>>) coordinates;
 
-//                double[][] mainland = allLandmasses[0];
+                if(geometry.getType().equals("Polygon")) {
+                    List<List<List<Double>>> dcOutline = (ArrayList<List<List<Double>>>) coordinates;
 
-
-
-                for(List<Double> coordinatePair: dcOutline.get(0)) {
-                    double lng = coordinatePair.get(0);
-                    double lat = coordinatePair.get(1);
-                    dcPoints.add(new LatLng(lat, lng));
+                    for (List<Double> coordinatePair : dcOutline.get(0)) {
+                        double lng = coordinatePair.get(0);
+                        double lat = coordinatePair.get(1);
+                        dcPoints.add(new LatLng(lat, lng));
+                    }
                 }
-
                 setUpMap();
             }
 
