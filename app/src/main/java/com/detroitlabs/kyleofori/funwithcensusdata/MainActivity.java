@@ -115,17 +115,17 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
                 }
                 OutlinesModel.Feature.Geometry geometry = featureINeed.getGeometry();
                 Object coordinates = geometry.getCoordinates();
-                List<double[][]> dcOutline = (ArrayList<double[][]>) coordinates;
+                List<List<List<Double>>> dcOutline = (ArrayList<List<List<Double>>>) coordinates;
 
 //                double[][] mainland = allLandmasses[0];
 
 
 
-//                for(double[] coordinatePair: dcOutline.get(0)) {
-//                    double lat = coordinatePair[0];
-//                    double lng = coordinatePair[1];
-//                    points.add(new LatLng(lat, lng));
-//                }
+                for(List<Double> coordinatePair: dcOutline.get(0)) {
+                    double lat = coordinatePair.get(0);
+                    double lng = coordinatePair.get(1);
+                    points.add(new LatLng(lat, lng));
+                }
             }
 
             @Override
