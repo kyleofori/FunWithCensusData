@@ -177,14 +177,14 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
                 .image(mImages.get(mCurrentEntry)).anchor(0, 1)
                 .position(TENNESSEE, 8600f, 6500f));
 
-        Polygon polygon = mMap.addPolygon(new PolygonOptions()
+        Polygon initialPolygon = mMap.addPolygon(new PolygonOptions()
                 .addAll(points)
                 .strokeColor(Color.GREEN)
                 .strokeWidth(2)
                 .fillColor(Color.YELLOW));
 
         if(firstPassDone) {
-            Polygon dcPolygon = mMap.addPolygon(new PolygonOptions()
+            Polygon followingPolygon = mMap.addPolygon(new PolygonOptions()
                     .addAll(addedPoints)
                     .strokeColor(Color.RED)
                     .strokeWidth(2)
