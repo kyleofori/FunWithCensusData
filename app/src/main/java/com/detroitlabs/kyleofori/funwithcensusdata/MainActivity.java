@@ -2,7 +2,6 @@ package com.detroitlabs.kyleofori.funwithcensusdata;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
@@ -27,11 +26,8 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-public class MainActivity extends AppCompatActivity implements BoundaryDataReceiver.Receiver {
+public class MainActivity extends AppCompatActivity {
 
-
-
-    public BoundaryDataReceiver boundaryDataReceiver;
     public int indexOfMostRecentPolygon = 0;
     private List<LatLng> points = new ArrayList<>();
     private List<List<LatLng>> polygonCollection = new ArrayList<>();
@@ -48,8 +44,6 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        boundaryDataReceiver = new BoundaryDataReceiver(new Handler());
-        boundaryDataReceiver.setReceiver(this);
 
         setContentView(R.layout.activity_main);
 
@@ -58,11 +52,6 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
         setUpMapIfNeeded();
 
         makeHttpCallWithRetrofit();
-
-//        final Intent intent = new Intent(Intent.ACTION_SYNC, null, this, QueryService.class);
-//        intent.putExtra("receiver", boundaryDataReceiver);
-//        intent.putExtra("command", "query");
-//        startService(intent);
 
     }
 
@@ -81,21 +70,6 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
     @Override
     protected void onPause() {
         super.onPause();
-        boundaryDataReceiver.setReceiver(null);
-    }
-
-    @Override
-    public void onReceiveResult(int resultCode, Bundle resultData) {
-        switch (resultCode) {
-            case QueryService.STATUS_RUNNING:
-                break;
-            case QueryService.STATUS_FINISHED:
-                points = resultData.getParcelableArrayList("results");
-                setUpMap();
-                break;
-            case QueryService.STATUS_ERROR:
-                break;
-        }
     }
 
     protected void makeHttpCallWithRetrofit(){
