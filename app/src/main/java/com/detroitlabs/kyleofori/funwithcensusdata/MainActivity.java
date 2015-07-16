@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
     private List<LatLng> points = new ArrayList<>();
     private List<List<LatLng>> polygonCollection = new ArrayList<>();
     private GoogleMap map;
+    private String clickedState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
                 for(StatesModel.GoogleResult.AddressComponent component: addressComponents) {
                     if (component.getTypes().get(0).equals(Constants.AA_LEVEL_1)) {
                         stateName = component.getLongName();
-                        System.out.println(stateName);
+                        clickedState = stateName;
                     }
                 }
 
@@ -100,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
         ArrayList<OutlinesModel.Feature> features = model.getFeatures();
         OutlinesModel.Feature state = null;
         for(OutlinesModel.Feature feature: features) {
-            if(feature.getProperties().getPoliticalUnitName().equals(Constants.AK)) {
+            if(feature.getProperties().getPoliticalUnitName().equals(clickedState)) {
                 state = feature;
             }
         }
@@ -126,7 +127,6 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
     @Override
     public void onMapLongClick(LatLng latLng) {
         String latLngString = latLng.latitude + "," + latLng.longitude;
-        System.out.println(latLngString + " HEY SEARCH FOR ME");
         makeHttpCallForStateNames(latLngString);
         makeHttpCallForStateOutlines();
     }
