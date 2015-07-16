@@ -21,7 +21,7 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-public class MainActivity extends AppCompatActivity implements Callback<OutlinesModel> {
+public class MainActivity extends AppCompatActivity implements Callback<OutlinesModel>, GoogleMap.OnMapLongClickListener {
 
     private static final LatLng USA_COORDINATES = new LatLng(39, -98);
     private static final int USA_ZOOM_LEVEL = 3;
@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
 
     private List<LatLng> points = new ArrayList<>();
     private List<List<LatLng>> polygonCollection = new ArrayList<>();
-    private GoogleMap mMap;
+    private GoogleMap map;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,13 +38,13 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
         setContentView(R.layout.activity_main);
         initializePoints();
         setUpMapIfNeeded();
-        makeHttpCallWithRetrofit();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         setUpMapIfNeeded();
+        map.setOnMapLongClickListener(this);
     }
 
     @Override
@@ -91,6 +91,10 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
         error.printStackTrace();
     }
 
+    @Override
+    public void onMapLongClick(LatLng latLng) {
+        makeHttpCallWithRetrofit();
+    }
 
     private void initializePoints() {
         points.add(new LatLng(36.5, -89.4));
@@ -115,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
     }
 
     private void addMostRecentPolygonToMap() {
-        mMap.addPolygon(new PolygonOptions()
+        map.addPolygon(new PolygonOptions()
                 .addAll(polygonCollection.get(indexOfMostRecentPolygon))
                 .strokeColor(Color.BLACK)
                 .strokeWidth(2)
@@ -125,22 +129,22 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
     }
 
     private void setUpMapIfNeeded() {
-        if (mMap == null) {
-            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+        if (map == null) {
+            map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                     .getMap();
-            if (mMap != null) {
+            if (map != null) {
                 setUpMap();
             }
         }
     }
 
     private void setUpMap() {
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(USA_COORDINATES, USA_ZOOM_LEVEL));
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(USA_COORDINATES, USA_ZOOM_LEVEL));
 
-        mMap.addPolygon(new PolygonOptions()
-            .addAll(points)
-            .strokeColor(Color.GREEN)
-            .strokeWidth(2)
-            .fillColor(Color.YELLOW));
+        map.addPolygon(new PolygonOptions()
+                .addAll(points)
+                .strokeColor(Color.GREEN)
+                .strokeWidth(2)
+                .fillColor(Color.YELLOW));
     }
 }
