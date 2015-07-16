@@ -35,9 +35,11 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
     public static final String MI = "Michigan";
 
     public BoundaryDataReceiver boundaryDataReceiver;
-
+    public int numberOfTimesAddedPolygonHasBeenCalledMinusOne = 0;
     private List<LatLng> points = new ArrayList<>();
     private List<LatLng> addedPoints = new ArrayList<>();
+    private List<List<LatLng>> groupsOfAddedPoints = new ArrayList<>();
+
 
     private static final LatLng TENNESSEE = new LatLng(35, -90);
     private final List<BitmapDescriptor> mImages = new ArrayList<BitmapDescriptor>();
@@ -134,12 +136,14 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
                     List<List<List<List<Double>>>> multiPolygonOutline = (ArrayList<List<List<List<Double>>>>) coordinates;
 
                     for(List<List<List<Double>>> polygonOutline: multiPolygonOutline) {
+                        List<LatLng> pointsToAddThisRound = new ArrayList<>();
                         for (List<Double> coordinatePair : polygonOutline.get(0)) {
                             double lng = coordinatePair.get(0);
                             double lat = coordinatePair.get(1);
-                            addedPoints.add(new LatLng(lat, lng));
+                            pointsToAddThisRound.add(new LatLng(lat, lng));
                         }
 
+                        groupsOfAddedPoints.add(pointsToAddThisRound);
                         addPolygonToMap();
                     }
                 }
@@ -183,11 +187,13 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
     }
 
     private void addPolygonToMap() {
-            Polygon followingPolygon = mMap.addPolygon(new PolygonOptions()
-                    .addAll(addedPoints)
-                    .strokeColor(Color.RED)
-                    .strokeWidth(2)
-                    .fillColor(Color.MAGENTA));
+        Polygon followingPolygon = mMap.addPolygon(new PolygonOptions()
+                .addAll(groupsOfAddedPoints.get(numberOfTimesAddedPolygonHasBeenCalledMinusOne))
+                .strokeColor(Color.RED)
+                .strokeWidth(2)
+                .fillColor(Color.MAGENTA));
+
+        numberOfTimesAddedPolygonHasBeenCalledMinusOne++;
     }
 
     public void switchImage(View view) {
