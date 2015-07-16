@@ -21,7 +21,7 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements Callback<OutlinesModel> {
 
     private static final LatLng USA_COORDINATES = new LatLng(39, -98);
     private static final int USA_ZOOM_LEVEL = 3;
@@ -59,37 +59,36 @@ public class MainActivity extends AppCompatActivity {
 
         OutlinesApi api = restAdapter.create(OutlinesApi.class);
 
-        Callback callback = new Callback<OutlinesModel>() {
-            @Override
-            public void success(OutlinesModel model, Response response) {
-                ArrayList<OutlinesModel.Feature> features = model.getFeatures();
-                OutlinesModel.Feature state = null;
-                for(OutlinesModel.Feature feature: features) {
-                    if(feature.getProperties().getPoliticalUnitName().equals(Constants.AK)) {
-                        state = feature;
-                    }
-                }
-                OutlinesModel.Feature.Geometry geometry = state.getGeometry();
-                Object coordinates = geometry.getCoordinates();
+        api.getOutlinesModel(MainActivity.this);
+    }
 
-                if(geometry.getType().equals("Polygon")) {
-                    List<List<List<Double>>> polygonOutline = (ArrayList<List<List<Double>>>) coordinates;
-                    addEachPolygonToMap(polygonOutline);
-                } else if (geometry.getType().equals("MultiPolygon")) {
-                    List<List<List<List<Double>>>> multiPolygonOutline = (ArrayList<List<List<List<Double>>>>) coordinates;
-                    for(List<List<List<Double>>> polygonOutline: multiPolygonOutline) {
-                        addEachPolygonToMap(polygonOutline);
-                    }
-                }
+
+    @Override
+    public void success(OutlinesModel model, Response response) {
+        ArrayList<OutlinesModel.Feature> features = model.getFeatures();
+        OutlinesModel.Feature state = null;
+        for(OutlinesModel.Feature feature: features) {
+            if(feature.getProperties().getPoliticalUnitName().equals(Constants.AK)) {
+                state = feature;
             }
+        }
+        OutlinesModel.Feature.Geometry geometry = state.getGeometry();
+        Object coordinates = geometry.getCoordinates();
 
-            @Override
-            public void failure(RetrofitError error) {
-                error.printStackTrace();
+        if(geometry.getType().equals("Polygon")) {
+            List<List<List<Double>>> polygonOutline = (ArrayList<List<List<Double>>>) coordinates;
+            addEachPolygonToMap(polygonOutline);
+        } else if (geometry.getType().equals("MultiPolygon")) {
+            List<List<List<List<Double>>>> multiPolygonOutline = (ArrayList<List<List<List<Double>>>>) coordinates;
+            for(List<List<List<Double>>> polygonOutline: multiPolygonOutline) {
+                addEachPolygonToMap(polygonOutline);
             }
-        };
+        }
+    }
 
-        api.getOutlinesModel(callback);
+    @Override
+    public void failure(RetrofitError error) {
+        error.printStackTrace();
     }
 
 
@@ -120,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
                 .addAll(polygonCollection.get(indexOfMostRecentPolygon))
                 .strokeColor(Color.BLACK)
                 .strokeWidth(2)
-                .fillColor(Color.BLUE));
+                .fillColor(Color.WHITE));
 
         indexOfMostRecentPolygon++;
     }
