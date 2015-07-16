@@ -39,8 +39,6 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
     private List<LatLng> points = new ArrayList<>();
     private List<LatLng> addedPoints = new ArrayList<>();
 
-    private boolean firstPassDone = false;
-
     private static final LatLng TENNESSEE = new LatLng(35, -90);
     private final List<BitmapDescriptor> mImages = new ArrayList<BitmapDescriptor>();
 
@@ -131,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
                         addedPoints.add(new LatLng(lat, lng));
                     }
 
-                    setUpMap();
+                    addPolygonToMap();
                 } else if (geometry.getType().equals("MultiPolygon")) {
                     List<List<List<List<Double>>>> multiPolygonOutline = (ArrayList<List<List<List<Double>>>>) coordinates;
 
@@ -142,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
                             addedPoints.add(new LatLng(lat, lng));
                         }
 
-                        setUpMap();
+                        addPolygonToMap();
                     }
                 }
             }
@@ -182,16 +180,14 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
                 .strokeColor(Color.GREEN)
                 .strokeWidth(2)
                 .fillColor(Color.YELLOW));
+    }
 
-        if(firstPassDone) {
+    private void addPolygonToMap() {
             Polygon followingPolygon = mMap.addPolygon(new PolygonOptions()
                     .addAll(addedPoints)
                     .strokeColor(Color.RED)
                     .strokeWidth(2)
                     .fillColor(Color.MAGENTA));
-        }
-
-        firstPassDone = true;
     }
 
     public void switchImage(View view) {
