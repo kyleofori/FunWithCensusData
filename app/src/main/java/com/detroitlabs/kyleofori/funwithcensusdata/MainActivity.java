@@ -23,7 +23,7 @@ import retrofit.client.Response;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final LatLng USA_COORDINATES = new LatLng(39, -95);
+    private static final LatLng USA_COORDINATES = new LatLng(39, -98);
     private static final int USA_ZOOM_LEVEL = 3;
 
     public int indexOfMostRecentPolygon = 0;
@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
                 ArrayList<OutlinesModel.Feature> features = model.getFeatures();
                 OutlinesModel.Feature state = null;
                 for(OutlinesModel.Feature feature: features) {
-                    if(feature.getProperties().getPoliticalUnitName().equals(Constants.IA)) {
+                    if(feature.getProperties().getPoliticalUnitName().equals(Constants.AK)) {
                         state = feature;
                     }
                 }
