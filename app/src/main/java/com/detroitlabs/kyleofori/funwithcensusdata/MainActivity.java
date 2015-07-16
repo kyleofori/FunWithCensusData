@@ -3,7 +3,6 @@ package com.detroitlabs.kyleofori.funwithcensusdata;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 
 import com.detroitlabs.kyleofori.funwithcensusdata.api.OutlinesApi;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
@@ -11,10 +10,6 @@ import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.GroundOverlay;
-import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
 
@@ -28,37 +23,22 @@ import retrofit.client.Response;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final LatLng USA_COORDINATES = new LatLng(39, -95);
+    private static final int USA_ZOOM_LEVEL = 3;
+
     public int indexOfMostRecentPolygon = 0;
+
     private List<LatLng> points = new ArrayList<>();
     private List<List<LatLng>> polygonCollection = new ArrayList<>();
-
-
-    private static final LatLng TENNESSEE = new LatLng(35, -90);
-    private final List<BitmapDescriptor> mImages = new ArrayList<>();
-
     private GoogleMap mMap;
-    private GroundOverlay mGroundOverlay;
-
-    private int mCurrentEntry = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
-
         initializePoints();
-
         setUpMapIfNeeded();
-
         makeHttpCallWithRetrofit();
-
-    }
-
-    private void initializePoints() {
-        points.add(new LatLng(36.5, -89.4));
-        points.add(new LatLng(39.0, -84.6));
-        points.add(new LatLng(37.0, -82.7));
     }
 
     @Override
@@ -112,6 +92,13 @@ public class MainActivity extends AppCompatActivity {
         api.getOutlinesModel(callback);
     }
 
+
+    private void initializePoints() {
+        points.add(new LatLng(36.5, -89.4));
+        points.add(new LatLng(39.0, -84.6));
+        points.add(new LatLng(37.0, -82.7));
+    }
+
     private void addEachPolygonToMap(List<List<List<Double>>> polygonOutline) {
         List<LatLng> polygon = makePolygonOfCoordinatePairs(polygonOutline);
         polygonCollection.add(polygon);
@@ -149,26 +136,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setUpMap() {
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(TENNESSEE, 5));
-
-        mImages.clear();
-        mImages.add(BitmapDescriptorFactory.fromResource(R.drawable.newark_nj_1922));
-        mImages.add(BitmapDescriptorFactory.fromResource(R.drawable.newark_prudential_sunny));
-
-        mCurrentEntry = 0;
-        mGroundOverlay = mMap.addGroundOverlay(new GroundOverlayOptions()
-                .image(mImages.get(mCurrentEntry)).anchor(0, 1)
-                .position(TENNESSEE, 8600f, 6500f));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(USA_COORDINATES, USA_ZOOM_LEVEL));
 
         mMap.addPolygon(new PolygonOptions()
             .addAll(points)
             .strokeColor(Color.GREEN)
             .strokeWidth(2)
             .fillColor(Color.YELLOW));
-    }
-
-    public void switchImage(View view) {
-        mCurrentEntry = (mCurrentEntry + 1) % mImages.size();
-        mGroundOverlay.setImage(mImages.get(mCurrentEntry));
     }
 }
