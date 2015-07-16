@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
 
         OutlinesApi api = restAdapter.create(OutlinesApi.class);
 
-        api.getOutlinesModel(MainActivity.this);
+        api.getOutlinesModel(this);
     }
 
 
