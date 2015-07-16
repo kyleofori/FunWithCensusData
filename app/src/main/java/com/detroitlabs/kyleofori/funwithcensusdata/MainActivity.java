@@ -8,6 +8,7 @@ import android.view.View;
 
 import com.detroitlabs.kyleofori.funwithcensusdata.api.OutlinesApi;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
+import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -16,7 +17,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 
 import java.util.ArrayList;
@@ -29,20 +29,16 @@ import retrofit.client.Response;
 
 public class MainActivity extends AppCompatActivity implements BoundaryDataReceiver.Receiver {
 
-    public static final String API_BASE_URL = "http://eric.clst.org";
-    public static final String DC = "District of Columbia";
-    public static final String IA = "Iowa";
-    public static final String MI = "Michigan";
+
 
     public BoundaryDataReceiver boundaryDataReceiver;
-    public int numberOfTimesAddedPolygonHasBeenCalledMinusOne = 0;
+    public int indexOfMostRecentPolygon = 0;
     private List<LatLng> points = new ArrayList<>();
-    private List<LatLng> addedPoints = new ArrayList<>();
-    private List<List<LatLng>> groupsOfAddedPoints = new ArrayList<>();
+    private List<List<LatLng>> polygonCollection = new ArrayList<>();
 
 
     private static final LatLng TENNESSEE = new LatLng(35, -90);
-    private final List<BitmapDescriptor> mImages = new ArrayList<BitmapDescriptor>();
+    private final List<BitmapDescriptor> mImages = new ArrayList<>();
 
     private GoogleMap mMap;
     private GroundOverlay mGroundOverlay;
@@ -104,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
 
     protected void makeHttpCallWithRetrofit(){
         RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint(API_BASE_URL)
+                .setEndpoint(Constants.API_BASE_URL)
                 .build();
 
         OutlinesApi api = restAdapter.create(OutlinesApi.class);
@@ -113,38 +109,22 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
             @Override
             public void success(OutlinesModel model, Response response) {
                 ArrayList<OutlinesModel.Feature> features = model.getFeatures();
-                OutlinesModel.Feature featureINeed = null;
-                for(OutlinesModel.Feature f: features) {
-                    if(f.getProperties().getPoliticalUnitName().equals(MI)) {
-                        featureINeed = f;
+                OutlinesModel.Feature state = null;
+                for(OutlinesModel.Feature feature: features) {
+                    if(feature.getProperties().getPoliticalUnitName().equals(Constants.IA)) {
+                        state = feature;
                     }
                 }
-                OutlinesModel.Feature.Geometry geometry = featureINeed.getGeometry();
+                OutlinesModel.Feature.Geometry geometry = state.getGeometry();
                 Object coordinates = geometry.getCoordinates();
 
                 if(geometry.getType().equals("Polygon")) {
                     List<List<List<Double>>> polygonOutline = (ArrayList<List<List<Double>>>) coordinates;
-
-                    for (List<Double> coordinatePair : polygonOutline.get(0)) {
-                        double lng = coordinatePair.get(0);
-                        double lat = coordinatePair.get(1);
-                        addedPoints.add(new LatLng(lat, lng));
-                    }
-
-                    addPolygonToMap();
+                    addEachPolygonToMap(polygonOutline);
                 } else if (geometry.getType().equals("MultiPolygon")) {
                     List<List<List<List<Double>>>> multiPolygonOutline = (ArrayList<List<List<List<Double>>>>) coordinates;
-
                     for(List<List<List<Double>>> polygonOutline: multiPolygonOutline) {
-                        List<LatLng> pointsToAddThisRound = new ArrayList<>();
-                        for (List<Double> coordinatePair : polygonOutline.get(0)) {
-                            double lng = coordinatePair.get(0);
-                            double lat = coordinatePair.get(1);
-                            pointsToAddThisRound.add(new LatLng(lat, lng));
-                        }
-
-                        groupsOfAddedPoints.add(pointsToAddThisRound);
-                        addPolygonToMap();
+                        addEachPolygonToMap(polygonOutline);
                     }
                 }
             }
@@ -157,6 +137,33 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
 
         api.getOutlinesModel(callback);
     }
+
+    private void addEachPolygonToMap(List<List<List<Double>>> polygonOutline) {
+        List<LatLng> polygon = makePolygonOfCoordinatePairs(polygonOutline);
+        polygonCollection.add(polygon);
+        addMostRecentPolygonToMap();
+    }
+
+    private List<LatLng> makePolygonOfCoordinatePairs(List<List<List<Double>>> polygonOutline) {
+        List<LatLng> polygon = new ArrayList<>();
+        for (List<Double> coordinatePair : polygonOutline.get(0)) {
+            double lng = coordinatePair.get(0);
+            double lat = coordinatePair.get(1);
+            polygon.add(new LatLng(lat, lng));
+        }
+        return polygon;
+    }
+
+    private void addMostRecentPolygonToMap() {
+        mMap.addPolygon(new PolygonOptions()
+                .addAll(polygonCollection.get(indexOfMostRecentPolygon))
+                .strokeColor(Color.BLACK)
+                .strokeWidth(2)
+                .fillColor(Color.BLUE));
+
+        indexOfMostRecentPolygon++;
+    }
+
     private void setUpMapIfNeeded() {
         if (mMap == null) {
             mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
@@ -179,21 +186,11 @@ public class MainActivity extends AppCompatActivity implements BoundaryDataRecei
                 .image(mImages.get(mCurrentEntry)).anchor(0, 1)
                 .position(TENNESSEE, 8600f, 6500f));
 
-        Polygon initialPolygon = mMap.addPolygon(new PolygonOptions()
-                .addAll(points)
-                .strokeColor(Color.GREEN)
-                .strokeWidth(2)
-                .fillColor(Color.YELLOW));
-    }
-
-    private void addPolygonToMap() {
-        Polygon followingPolygon = mMap.addPolygon(new PolygonOptions()
-                .addAll(groupsOfAddedPoints.get(numberOfTimesAddedPolygonHasBeenCalledMinusOne))
-                .strokeColor(Color.RED)
-                .strokeWidth(2)
-                .fillColor(Color.MAGENTA));
-
-        numberOfTimesAddedPolygonHasBeenCalledMinusOne++;
+        mMap.addPolygon(new PolygonOptions()
+            .addAll(points)
+            .strokeColor(Color.GREEN)
+            .strokeWidth(2)
+            .fillColor(Color.YELLOW));
     }
 
     public void switchImage(View view) {
