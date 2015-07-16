@@ -107,10 +107,10 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
         OutlinesModel.Feature.Geometry geometry = state.getGeometry();
         Object coordinates = geometry.getCoordinates();
 
-        if(geometry.getType().equals("Polygon")) {
+        if(geometry.getType().equals(Constants.POLYGON)) {
             List<List<List<Double>>> polygonOutline = (ArrayList<List<List<Double>>>) coordinates;
             addEachPolygonToMap(polygonOutline);
-        } else if (geometry.getType().equals("MultiPolygon")) {
+        } else if (geometry.getType().equals(Constants.MULTIPOLYGON)) {
             List<List<List<List<Double>>>> multiPolygonOutline = (ArrayList<List<List<List<Double>>>>) coordinates;
             for(List<List<List<Double>>> polygonOutline: multiPolygonOutline) {
                 addEachPolygonToMap(polygonOutline);
