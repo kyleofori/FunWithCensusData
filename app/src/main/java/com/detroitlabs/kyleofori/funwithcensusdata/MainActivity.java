@@ -5,7 +5,9 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import com.detroitlabs.kyleofori.funwithcensusdata.api.OutlinesApi;
+import com.detroitlabs.kyleofori.funwithcensusdata.api.StatesApi;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
+import com.detroitlabs.kyleofori.funwithcensusdata.model.StatesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -52,9 +54,9 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
         super.onPause();
     }
 
-    protected void makeHttpCallWithRetrofit(){
+    protected void makeHttpCallForStateOutlines(){
         RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint(Constants.API_BASE_URL)
+                .setEndpoint(Constants.ERIC_CLST_API_BASE_URL)
                 .build();
 
         OutlinesApi api = restAdapter.create(OutlinesApi.class);
@@ -62,6 +64,36 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
         api.getOutlinesModel(this);
     }
 
+    protected void makeHttpCallForStateNames(String latLngString){
+        RestAdapter restAdapter = new RestAdapter.Builder()
+                .setEndpoint(Constants.GOOGLE_MAPS_API_BASE_URL)
+                .build();
+
+        StatesApi api = restAdapter.create(StatesApi.class);
+
+        Callback<StatesModel> callback = new Callback<StatesModel>() {
+            @Override
+            public void success(StatesModel statesModel, Response response) {
+                ArrayList<StatesModel.GoogleResult> results = statesModel.getResults();
+                ArrayList<StatesModel.GoogleResult.AddressComponent> addressComponents = results.get(0).getAddressComponents();
+                String stateName;
+                for(StatesModel.GoogleResult.AddressComponent component: addressComponents) {
+                    if (component.getTypes().get(0).equals(Constants.AA_LEVEL_1)) {
+                        stateName = component.getLongName();
+                        System.out.println(stateName);
+                    }
+                }
+
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+
+            }
+        };
+
+        api.getStatesModel(latLngString, callback);
+    }
 
     @Override
     public void success(OutlinesModel model, Response response) {
@@ -93,7 +125,10 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
 
     @Override
     public void onMapLongClick(LatLng latLng) {
-        makeHttpCallWithRetrofit();
+        String latLngString = latLng.latitude + "," + latLng.longitude;
+        System.out.println(latLngString + " HEY SEARCH FOR ME");
+        makeHttpCallForStateNames(latLngString);
+        makeHttpCallForStateOutlines();
     }
 
     private void initializePoints() {
