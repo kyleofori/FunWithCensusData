@@ -38,5 +38,67 @@
                 android:onClick="switchImage"
                 android:text="@string/switch_image"/>
         </FrameLayout>
+        <LinearLayout    xmlns:android="http://schemas.android.com/apk/res/android"
+                         android:orientation="vertical"
+                         android:gravity="bottom"
+                         android:layout_width="fill_parent"
+                         android:layout_height="fill_parent">
+
+            <ImageButton
+                android:id="@+id/show_popup_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:background="@drawable/button_learnmore_purp"
+                />
+
+            <com.detroitlabs.kyleofori.funwithcensusdata.SlidingPanel
+                android:id="@+id/popup_window"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="left"
+                android:padding="1px"
+                android:background="@color/white">
+
+                <LinearLayout    xmlns:android="http://schemas.android.com/apk/res/android"
+                                 android:orientation="horizontal"
+                                 android:layout_width="fill_parent"
+                                 android:layout_height="fill_parent"
+                                 android:background="@color/pink">
+
+                    <TextView
+                        android:id="@+id/site_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="bold"
+                        android:textSize="16px"
+                        android:text="CoderzHeaven"
+                        android:layout_gravity="center"
+                        android:layout_alignParentLeft="true"
+                        android:textColor="@color/black"
+                        android:layout_weight="1"
+                        android:layout_marginLeft="5px"/>
+
+                    <ImageButton android:id="@+id/hide_popup_button"
+                                 android:layout_width="wrap_content"
+                                 android:layout_height="wrap_content"
+                                 android:layout_alignParentRight="true"
+                                 android:layout_centerInParent="true"
+                                 android:layout_margin="2px"
+                                 android:layout_gravity="center"
+                                 android:background="@drawable/done_button_png_hi"/>
+
+                </LinearLayout>
+
+                <TextView    android:id="@+id/site_description"
+                             android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:textColor="@color/black"
+                             android:layout_margin="5px"/>
+
+            </com.detroitlabs.kyleofori.funwithcensusdata.SlidingPanel>
+
+        </LinearLayout>
     </RelativeLayout>
 </LinearLayout>
