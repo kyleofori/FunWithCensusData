@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
     public int indexOfMostRecentPolygon = 0;
 
     private SlidingPanel popup;
-    private List<LatLng> points = new ArrayList<>();
     private List<List<LatLng>> polygonCollection = new ArrayList<>();
     private GoogleMap map;
     private String clickedState;
@@ -50,7 +49,6 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        initializePoints();
         setUpMapIfNeeded();
         initPopup();
     }
@@ -96,7 +94,6 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
                         clickedState = stateName;
                     }
                 }
-
             }
 
             @Override
@@ -162,12 +159,6 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
         }
     }
 
-    private void initializePoints() {
-        points.add(new LatLng(36.5, -89.4));
-        points.add(new LatLng(39.0, -84.6));
-        points.add(new LatLng(37.0, -82.7));
-    }
-
     private void addEachPolygonToMap(List<List<List<Double>>> polygonOutline) {
         List<LatLng> polygon = makePolygonOfCoordinatePairs(polygonOutline);
         polygonCollection.add(polygon);
@@ -206,12 +197,6 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
 
     private void setUpMap() {
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(USA_COORDINATES, USA_ZOOM_LEVEL));
-
-        map.addPolygon(new PolygonOptions()
-                .addAll(points)
-                .strokeColor(Color.GREEN)
-                .strokeWidth(2)
-                .fillColor(Color.YELLOW));
     }
 
     private void initPopup() {
