@@ -28,13 +28,14 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-public class MainActivity extends AppCompatActivity implements Callback<OutlinesModel>, GoogleMap.OnMapLongClickListener {
+public class MainActivity extends AppCompatActivity implements Callback<OutlinesModel>, GoogleMap.OnMapLongClickListener, View.OnClickListener {
 
     private static final LatLng USA_COORDINATES = new LatLng(39, -98);
     private static final int USA_ZOOM_LEVEL = 3;
 
     public int indexOfMostRecentPolygon = 0;
 
+    private SlidingPanel popup;
     private List<LatLng> points = new ArrayList<>();
     private List<List<LatLng>> polygonCollection = new ArrayList<>();
     private GoogleMap map;
@@ -42,6 +43,8 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
     private Animation animShow, animHide;
     private TextView locationName;
     private TextView locationDescription;
+    private ImageButton showButton;
+    private ImageButton hideButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,6 +144,24 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
         makeHttpCallForStateOutlines();
     }
 
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.show_popup_button:
+                popup.setVisibility(View.VISIBLE);
+                popup.startAnimation(animShow);
+                showButton.setEnabled(false);
+                hideButton.setEnabled(true);
+                break;
+            case R.id.hide_popup_button:
+                popup.startAnimation(animHide);
+                showButton.setEnabled(true);
+                hideButton.setEnabled(false);
+                popup.setVisibility(View.GONE);
+                break;
+        }
+    }
+
     private void initializePoints() {
         points.add(new LatLng(36.5, -89.4));
         points.add(new LatLng(39.0, -84.6));
@@ -194,33 +215,16 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
     }
 
     private void initPopup() {
-
-        final SlidingPanel popup = (SlidingPanel) findViewById(R.id.popup_window);
-
-        // <span id="IL_AD2" class="IL_AD">Hide</span> the popup initially.....
+        popup = (SlidingPanel) findViewById(R.id.popup_window);
         popup.setVisibility(View.GONE);
 
+        showButton = (ImageButton) findViewById(R.id.show_popup_button);
+        showButton.setOnClickListener(this);
+        hideButton = (ImageButton) findViewById(R.id.hide_popup_button);
+        hideButton.setOnClickListener(this);
+
         animShow = AnimationUtils.loadAnimation(this, R.anim.popup_show);
-        animHide = AnimationUtils.loadAnimation( this, R.anim.popup_hide);
-
-        final ImageButton showButton = (ImageButton) findViewById(R.id.show_popup_button);
-        final ImageButton   hideButton = (ImageButton) findViewById(R.id.hide_popup_button);
-        showButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                popup.setVisibility(View.VISIBLE);
-                popup.startAnimation(animShow);
-                showButton.setEnabled(false);
-                hideButton.setEnabled(true);
-            }
-        });
-
-        hideButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                popup.startAnimation( animHide );
-                showButton.setEnabled(true);
-                hideButton.setEnabled(false);
-                popup.setVisibility(View.GONE);
-            }});
+        animHide = AnimationUtils.loadAnimation(this, R.anim.popup_hide);
 
         locationName = (TextView) findViewById(R.id.site_name);
         locationDescription = (TextView) findViewById(R.id.site_description);
