@@ -30,7 +30,6 @@ import retrofit.client.Response;
 
 public class MainActivity extends AppCompatActivity implements Callback<OutlinesModel>, GoogleMap.OnMapLongClickListener {
 
-    private Animation animShow, animHide;
     private static final LatLng USA_COORDINATES = new LatLng(39, -98);
     private static final int USA_ZOOM_LEVEL = 3;
 
@@ -40,6 +39,9 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
     private List<List<LatLng>> polygonCollection = new ArrayList<>();
     private GoogleMap map;
     private String clickedState;
+    private Animation animShow, animHide;
+    private TextView locationName;
+    private TextView locationDescription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
         for(OutlinesModel.Feature feature: features) {
             if(feature.getProperties().getPoliticalUnitName().equals(clickedState)) {
                 state = feature;
+                locationName.setText(clickedState);
             }
         }
         OutlinesModel.Feature.Geometry geometry = state.getGeometry();
@@ -219,14 +222,10 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
                 popup.setVisibility(View.GONE);
             }});
 
-        final TextView locationName = (TextView) findViewById(R.id.site_name);
-        final TextView locationDescription = (TextView) findViewById(R.id.site_description);
+        locationName = (TextView) findViewById(R.id.site_name);
+        locationDescription = (TextView) findViewById(R.id.site_description);
 
-        locationName.setText("CoderzHeaven");
-        locationDescription.setText("Heaven of all working codes"
-                + " A place where you can ask, share & even shout for code! Let’s share a wide range of technology here." +
-                " From this site you will get a lot of working examples in your favorite programming languages!." +
-                " Always remember we are only one comment away from you… Let’s shorten the distance between your doubts and your answers…");
+        locationDescription.setText(R.string.state_information);
 
     }
 }

@@ -5,5 +5,11 @@
     <string name="action_settings">Settings</string>
     <string name="transparency">Transparency</string>
     <string name="switch_image">Switch Image</string>
+    <string name="state_information">The following section will contain information about the state
+        that is highlighted. For now, only one state at a time can be highlighted, because that is
+        the only way I can currently think of to show information about states. This will change.
+        I also need to combine the done button and the learn more button so that the Learn More
+        button does not always have to be visible.</string>
+    <string name="state_name_goes_here">(Name of state goes here)</string>
 
 </resources>

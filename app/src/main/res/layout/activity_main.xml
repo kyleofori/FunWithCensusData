@@ -60,8 +60,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textStyle="bold"
-                        android:textSize="16px"
-                        android:text="CoderzHeaven"
+                        android:textSize="32dp"
+                        android:text="@string/state_name_goes_here"
                         android:layout_gravity="center"
                         android:layout_alignParentLeft="true"
                         android:textColor="@color/black"
@@ -73,9 +73,9 @@
                                  android:layout_height="wrap_content"
                                  android:layout_alignParentRight="true"
                                  android:layout_centerInParent="true"
-                                 android:layout_margin="2px"
+                                 android:layout_margin="2dp"
                                  android:layout_gravity="center"
-                                 android:background="@drawable/done_button_png_hi"/>
+                                 android:background="@drawable/donebutton"/>
 
                 </LinearLayout>
 
@@ -83,7 +83,7 @@
                              android:layout_width="wrap_content"
                              android:layout_height="wrap_content"
                              android:textColor="@color/black"
-                             android:layout_margin="5px"/>
+                             android:layout_margin="5dp"/>
 
             </com.detroitlabs.kyleofori.funwithcensusdata.SlidingPanel>
 
