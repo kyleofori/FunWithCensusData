@@ -89,7 +89,9 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
                 ArrayList<StatesModel.GoogleResult.AddressComponent> addressComponents = results.get(0).getAddressComponents();
                 String stateName;
                 for(StatesModel.GoogleResult.AddressComponent component: addressComponents) {
-                    if (component.getTypes().get(0).equals(Constants.AA_LEVEL_1)) {
+                    ArrayList<String> types = component.getTypes();
+                    String firstType = types.get(0);
+                    if (firstType.equals(Constants.AA_LEVEL_1)) {
                         stateName = component.getLongName();
                         clickedState = stateName;
                     }
