@@ -3,6 +3,7 @@ package com.detroitlabs.kyleofori.funwithcensusdata;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -38,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
     private SlidingPanel popup;
     private List<List<LatLng>> polygonCollection = new ArrayList<>();
     private GoogleMap map;
-    private String clickedState;
+    private String clickedState, selectedState;
     private Animation animShow, animHide;
     private TextView locationName;
     private TextView locationDescription;
@@ -65,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
         super.onPause();
     }
 
-    protected void makeHttpCallForStateOutlines(){
+    protected void makeHttpCallForStateOutlines() {
         RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint(Constants.ERIC_CLST_API_BASE_URL)
                 .build();
@@ -94,6 +95,21 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
                     if (firstType.equals(Constants.AA_LEVEL_1)) {
                         stateName = component.getLongName();
                         clickedState = stateName;
+                        Log.e("A statesModel cb", "Selected state " + selectedState + " clicked state " + clickedState);
+
+                        if (selectedState != null) {
+                            map.clear();
+                            Log.e("TAG FOR STATES X", "Map cleared");
+                            if (!clickedState.equals(selectedState)) {
+                                makeHttpCallForStateOutlines(); //uses variable clickedState to retrieve outline
+                            } else { //this is for if you just unselected the selected state
+                                resetStates();
+                                Log.e("E resetCB", "Selected state " + selectedState + " clicked state " + clickedState);
+                            }
+                        } else {
+                            makeHttpCallForStateOutlines();
+                        }
+
                     }
                 }
             }
@@ -129,6 +145,23 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
                 addEachPolygonToMap(polygonOutline);
             }
         }
+
+        Log.e("TAG FOR STATES A'", "Selected state " + selectedState + " clicked state " + clickedState);
+
+        if (selectedState != null) {
+            if (!clickedState.equals(selectedState)) {
+                selectedState = clickedState;
+                Log.e("TAG FOR STATES B", "Selected state " + selectedState + " clicked state " + clickedState);
+
+            } else {
+                selectedState = null;
+                Log.e("TAG FOR STATES C", "Selected state " + selectedState + " clicked state " + clickedState);
+            }
+        } else {
+            selectedState = clickedState;
+            Log.e("TAG FOR STATES D", "Selected state " + selectedState + " clicked state " + clickedState);
+
+        }
     }
 
     @Override
@@ -139,8 +172,12 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
     @Override
     public void onMapLongClick(LatLng latLng) {
         String latLngString = latLng.latitude + "," + latLng.longitude;
-        makeHttpCallForStateNames(latLngString);
-        makeHttpCallForStateOutlines();
+        makeHttpCallForStateNames(latLngString); //sets variable clickedState
+    }
+
+    private void resetStates() {
+        selectedState = null;
+        clickedState = null;
     }
 
     @Override
