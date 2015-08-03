@@ -153,14 +153,10 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
                 selectedState = clickedState;
                 Log.e("TAG FOR STATES B", "Selected state " + selectedState + " clicked state " + clickedState);
 
-            } else {
-                selectedState = null;
-                Log.e("TAG FOR STATES C", "Selected state " + selectedState + " clicked state " + clickedState);
             }
         } else {
             selectedState = clickedState;
             Log.e("TAG FOR STATES D", "Selected state " + selectedState + " clicked state " + clickedState);
-
         }
     }
 
