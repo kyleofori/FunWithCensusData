@@ -95,16 +95,12 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
                     if (firstType.equals(Constants.AA_LEVEL_1)) {
                         stateName = component.getLongName();
                         clickedState = stateName;
-                        Log.e("A statesModel cb", "Selected state " + selectedState + " clicked state " + clickedState);
-
                         if (selectedState != null) {
                             map.clear();
-                            Log.e("TAG FOR STATES X", "Map cleared");
                             if (!clickedState.equals(selectedState)) {
                                 makeHttpCallForStateOutlines(); //uses variable clickedState to retrieve outline
                             } else { //this is for if you just unselected the selected state
                                 resetStates();
-                                Log.e("E resetCB", "Selected state " + selectedState + " clicked state " + clickedState);
                             }
                         } else {
                             makeHttpCallForStateOutlines();
@@ -146,17 +142,12 @@ public class MainActivity extends AppCompatActivity implements Callback<Outlines
             }
         }
 
-        Log.e("TAG FOR STATES A'", "Selected state " + selectedState + " clicked state " + clickedState);
-
         if (selectedState != null) {
             if (!clickedState.equals(selectedState)) {
                 selectedState = clickedState;
-                Log.e("TAG FOR STATES B", "Selected state " + selectedState + " clicked state " + clickedState);
-
             }
         } else {
             selectedState = clickedState;
-            Log.e("TAG FOR STATES D", "Selected state " + selectedState + " clicked state " + clickedState);
         }
     }
 
