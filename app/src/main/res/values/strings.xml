@@ -11,5 +11,6 @@
         I also need to combine the done button and the learn more button so that the Learn More
         button does not always have to be visible.</string>
     <string name="state_name_goes_here">(Name of state goes here)</string>
+    <string name="retrieving_info">Retrieving information…</string>
 
 </resources>
