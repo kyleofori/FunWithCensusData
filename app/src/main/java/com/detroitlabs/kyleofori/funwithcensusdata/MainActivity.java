@@ -128,7 +128,10 @@ View.OnClickListener, GoogleMap.OnMapClickListener {
             @Override
             public void success(StatesModel statesModel, Response response) {
                 ArrayList<StatesModel.GoogleResult> results = statesModel.getResults();
-                if (!results.isEmpty()) {
+                if (results.isEmpty()) {
+                    System.out.println("You may have clicked in the wrong place");
+                    progressDialog.dismiss();
+                } else {
                     ArrayList<StatesModel.GoogleResult.AddressComponent> addressComponents = results.get(0).getAddressComponents();
                     String stateName;
                     for(StatesModel.GoogleResult.AddressComponent component: addressComponents) {
@@ -137,7 +140,9 @@ View.OnClickListener, GoogleMap.OnMapClickListener {
                         if (firstType.equals(Constants.AA_LEVEL_1)) {
                             stateName = component.getLongName();
                             clickedState = stateName;
-                            if (selectedState != null) {
+                            if (selectedState == null) {
+                                makeHttpCallForStateOutlines();
+                            } else {
                                 map.clear();
                                 if (!clickedState.equals(selectedState)) {
                                     makeHttpCallForStateOutlines(); //uses variable clickedState to retrieve outline
@@ -145,11 +150,10 @@ View.OnClickListener, GoogleMap.OnMapClickListener {
                                     resetStates();
                                     progressDialog.dismiss();
                                 }
-                            } else {
-                                makeHttpCallForStateOutlines();
                             }
                         }
                     }
+
                 }
             }
 
