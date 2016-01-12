@@ -74,12 +74,55 @@ View.OnClickListener, GoogleMap.OnMapClickListener {
         api.getOutlinesModel(this);
     }
 
+    //******************Methods for Callback<OutlinesModel>*****************//
+    @Override
+    public void success(OutlinesModel model, Response response) {
+        ArrayList<OutlinesModel.Feature> features = model.getFeatures();
+        OutlinesModel.Feature state = null;
+        for(OutlinesModel.Feature feature: features) {
+            if(feature.getProperties().getPoliticalUnitName().equals(clickedState)) {
+                state = feature;
+                locationName.setText(clickedState);
+            }
+        }
+        Log.e("To see provs", "clicked state " + clickedState);
+        OutlinesModel.Feature.Geometry geometry = state.getGeometry();
+        Object coordinates = geometry.getCoordinates();
+
+        if(geometry.getType().equals(Constants.POLYGON)) {
+            List<List<List<Double>>> polygonOutline = (ArrayList<List<List<Double>>>) coordinates;
+            addEachPolygonToMap(polygonOutline);
+        } else if (geometry.getType().equals(Constants.MULTIPOLYGON)) {
+            List<List<List<List<Double>>>> multiPolygonOutline = (ArrayList<List<List<List<Double>>>>) coordinates;
+            for(List<List<List<Double>>> polygonOutline: multiPolygonOutline) {
+                addEachPolygonToMap(polygonOutline);
+            }
+        }
+
+        if (selectedState != null) {
+            if (!clickedState.equals(selectedState)) {
+                selectedState = clickedState;
+            }
+        } else {
+            selectedState = clickedState;
+        }
+        progressDialog.dismiss();
+    }
+
+    @Override
+    public void failure(RetrofitError error) {
+        error.printStackTrace();
+        progressDialog.dismiss();
+    }
+
     protected void makeHttpCallForStateNames(LatLng latLng) {
         RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint(Constants.GOOGLE_MAPS_API_BASE_URL)
                 .build();
 
         StatesApi api = restAdapter.create(StatesApi.class);
+
+        //******************Methods for Callback<StatesModel>*****************//
 
         Callback<StatesModel> callback = new Callback<StatesModel>() { //TODO: don't let the call go forward if the address component that has a country in its type array doesn't have a short_name of US
             @Override
@@ -217,45 +260,6 @@ View.OnClickListener, GoogleMap.OnMapClickListener {
 
 
 
-    //******************Methods for Callback<OutlinesModel>*****************//
-    @Override
-    public void success(OutlinesModel model, Response response) {
-        ArrayList<OutlinesModel.Feature> features = model.getFeatures();
-        OutlinesModel.Feature state = null;
-        for(OutlinesModel.Feature feature: features) {
-            if(feature.getProperties().getPoliticalUnitName().equals(clickedState)) {
-                state = feature;
-                locationName.setText(clickedState);
-            }
-        }
-        Log.e("To see provs", "clicked state " + clickedState);
-        OutlinesModel.Feature.Geometry geometry = state.getGeometry();
-        Object coordinates = geometry.getCoordinates();
 
-        if(geometry.getType().equals(Constants.POLYGON)) {
-            List<List<List<Double>>> polygonOutline = (ArrayList<List<List<Double>>>) coordinates;
-            addEachPolygonToMap(polygonOutline);
-        } else if (geometry.getType().equals(Constants.MULTIPOLYGON)) {
-            List<List<List<List<Double>>>> multiPolygonOutline = (ArrayList<List<List<List<Double>>>>) coordinates;
-            for(List<List<List<Double>>> polygonOutline: multiPolygonOutline) {
-                addEachPolygonToMap(polygonOutline);
-            }
-        }
-
-        if (selectedState != null) {
-            if (!clickedState.equals(selectedState)) {
-                selectedState = clickedState;
-            }
-        } else {
-            selectedState = clickedState;
-        }
-        progressDialog.dismiss();
-    }
-
-    @Override
-    public void failure(RetrofitError error) {
-        error.printStackTrace();
-        progressDialog.dismiss();
-    }
 
 }
