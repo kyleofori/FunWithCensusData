@@ -1,6 +1,5 @@
 package com.detroitlabs.kyleofori.funwithcensusdata;
 
-import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -11,10 +10,8 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.detroitlabs.kyleofori.funwithcensusdata.api.OutlinesApi;
 import com.detroitlabs.kyleofori.funwithcensusdata.api.StatesApi;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
-import com.detroitlabs.kyleofori.funwithcensusdata.model.StatesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -31,28 +28,31 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 public class MainActivity extends AppCompatActivity implements
-View.OnClickListener, GoogleMap.OnMapClickListener {
+View.OnClickListener, GoogleMap.OnMapClickListener, Callback<OutlinesModel>, MapClearingInterface {
 
     private static final LatLng USA_COORDINATES = new LatLng(39, -98);
     private static final int USA_ZOOM_LEVEL = 3;
 
-    public int indexOfMostRecentPolygon = 0;
-
-    private SlidingPanel popup;
     private List<List<LatLng>> polygonCollection = new ArrayList<>();
+    public int indexOfMostRecentPolygon = 0;
+    private OutlineCallMaker outlineCallMaker;
+    private SlidingPanel popup;
     private GoogleMap map;
-    private String clickedState, selectedState;
     private Animation animShow, animHide;
     private TextView locationName;
-    private TextView locationDescription;
     private ImageButton showButton;
     private ImageButton hideButton;
-    private ProgressDialog progressDialog;
+    private String selectedState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        init();
+    }
+
+    private void init() {
         setContentView(R.layout.activity_main);
+        outlineCallMaker = new OutlineCallMaker(this, this);
         setUpMapIfNeeded();
         initPopup();
     }
@@ -64,59 +64,9 @@ View.OnClickListener, GoogleMap.OnMapClickListener {
         map.setOnMapClickListener(this);
     }
 
-    protected void makeHttpCallForStateOutlines() {
-        RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint(Constants.ERIC_CLST_API_BASE_URL)
-                .build();
-
-        OutlinesApi outlinesApi = restAdapter.create(OutlinesApi.class);
-
-        //******************Methods for Callback<OutlinesModel>*****************//
-
-        Callback<OutlinesModel> outlinesModelCallback = new Callback<OutlinesModel>() {
-            @Override
-            public void success(OutlinesModel outlinesModel, Response response) {
-                ArrayList<OutlinesModel.Feature> features = outlinesModel.getFeatures();
-                OutlinesModel.Feature state = null;
-                for(OutlinesModel.Feature feature: features) {
-                    if(feature.getProperties().getPoliticalUnitName().equals(clickedState)) {
-                        state = feature;
-                        locationName.setText(clickedState);
-                    }
-                }
-                Log.e("To see provs", "clicked state " + clickedState);
-                OutlinesModel.Feature.Geometry geometry = state.getGeometry();
-                Object coordinates = geometry.getCoordinates();
-
-                if(geometry.getType().equals(Constants.POLYGON)) {
-                    List<List<List<Double>>> polygonOutline = (ArrayList<List<List<Double>>>) coordinates;
-                    addEachPolygonToMap(polygonOutline);
-                } else if (geometry.getType().equals(Constants.MULTIPOLYGON)) {
-                    List<List<List<List<Double>>>> multiPolygonOutline = (ArrayList<List<List<List<Double>>>>) coordinates;
-                    for(List<List<List<Double>>> polygonOutline: multiPolygonOutline) {
-                        addEachPolygonToMap(polygonOutline);
-                    }
-                }
-
-                if (selectedState != null) {
-                    if (!clickedState.equals(selectedState)) {
-                        selectedState = clickedState;
-                    }
-                } else {
-                    selectedState = clickedState;
-                }
-                progressDialog.dismiss();
-
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                error.printStackTrace();
-                progressDialog.dismiss();
-            }
-        };
-
-        outlinesApi.getOutlinesModel(outlinesModelCallback);
+    @Override
+    public void onMapClick(LatLng latLng) {
+        makeHttpCallForStateNames(latLng); //sets variable clickedState
     }
 
     protected void makeHttpCallForStateNames(LatLng latLng) {
@@ -126,66 +76,12 @@ View.OnClickListener, GoogleMap.OnMapClickListener {
 
         StatesApi statesApi = restAdapter.create(StatesApi.class);
 
-        //******************Methods for Callback<StatesModel>*****************//
-
-        Callback<StatesModel> callback = new Callback<StatesModel>() { //TODO: don't let the call go forward if the address component that has a country in its type array doesn't have a short_name of US
-            @Override
-            public void success(StatesModel statesModel, Response response) {
-                ArrayList<StatesModel.GoogleResult> results = statesModel.getResults();
-                if (results.isEmpty()) {
-                    System.out.println("You may have clicked in the wrong place");
-                    progressDialog.dismiss();
-                } else {
-                    ArrayList<StatesModel.GoogleResult.AddressComponent> addressComponents = results.get(0).getAddressComponents();
-                    String stateName;
-                    for(StatesModel.GoogleResult.AddressComponent component: addressComponents) {
-                        ArrayList<String> types = component.getTypes();
-                        String firstType = types.get(0);
-                        if (firstType.equals(Constants.AA_LEVEL_1)) {
-                            stateName = component.getLongName();
-                            clickedState = stateName;
-                            if (selectedState == null) {
-                                makeHttpCallForStateOutlines();
-                            } else {
-                                map.clear();
-                                if (!clickedState.equals(selectedState)) {
-                                    makeHttpCallForStateOutlines(); //uses variable clickedState to retrieve outline
-                                } else { //this is for if you just unselected the selected state
-                                    resetStates();
-                                    progressDialog.dismiss();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                error.printStackTrace();
-            }
-        };
-
         String latLngString = latLng.latitude + "," + latLng.longitude;
 
-        statesApi.getStatesModel(latLngString, callback);
+        statesApi.getStatesModel(latLngString, outlineCallMaker);
     }
 
-    @Override
-    public void onMapClick(LatLng latLng) {
-        makeHttpCallForStateNames(latLng); //sets variable clickedState
-        progressDialog = new ProgressDialog(this);
-        if(clickedState == null) {
-            progressDialog.setMessage(getString(R.string.retrieving_info));
-            progressDialog.show();
-        }
 
-    }
-
-    private void resetStates() {
-        selectedState = null;
-        clickedState = null;
-    }
 
     @Override
     public void onClick(View view) {
@@ -203,32 +99,6 @@ View.OnClickListener, GoogleMap.OnMapClickListener {
                 popup.setVisibility(View.GONE);
                 break;
         }
-    }
-
-    private void addEachPolygonToMap(List<List<List<Double>>> polygonOutline) {
-        List<LatLng> polygon = makePolygonOfCoordinatePairs(polygonOutline);
-        polygonCollection.add(polygon);
-        addMostRecentPolygonToMap();
-    }
-
-    private List<LatLng> makePolygonOfCoordinatePairs(List<List<List<Double>>> polygonOutline) {
-        List<LatLng> polygon = new ArrayList<>();
-        for (List<Double> coordinatePair : polygonOutline.get(0)) {
-            double lng = coordinatePair.get(0);
-            double lat = coordinatePair.get(1);
-            polygon.add(new LatLng(lat, lng));
-        }
-        return polygon;
-    }
-
-    private void addMostRecentPolygonToMap() {
-        map.addPolygon(new PolygonOptions()
-                .addAll(polygonCollection.get(indexOfMostRecentPolygon))
-                .strokeColor(Color.BLACK)
-                .strokeWidth(2)
-                .fillColor(Color.WHITE));
-
-        indexOfMostRecentPolygon++;
     }
 
     private void setUpMapIfNeeded() {
@@ -258,8 +128,80 @@ View.OnClickListener, GoogleMap.OnMapClickListener {
         animHide = AnimationUtils.loadAnimation(this, R.anim.popup_hide);
 
         locationName = (TextView) findViewById(R.id.site_name);
-        locationDescription = (TextView) findViewById(R.id.site_description);
+        TextView locationDescription = (TextView) findViewById(R.id.site_description);
 
         locationDescription.setText(R.string.state_information);
+    }
+
+    //******************Methods for Callback<OutlinesModel>*****************//
+
+    @Override
+    public void success(OutlinesModel outlinesModel, Response response) {
+        ArrayList<OutlinesModel.Feature> features = outlinesModel.getFeatures();
+        OutlinesModel.Feature state = null;
+        for(OutlinesModel.Feature feature: features) {
+            if(feature.getProperties().getPoliticalUnitName().equals(outlineCallMaker.clickedState)) {
+                state = feature;
+                locationName.setText(outlineCallMaker.clickedState);
+            }
+        }
+        Log.e("To see provs", "clicked state " + outlineCallMaker.clickedState);
+        OutlinesModel.Feature.Geometry geometry = state.getGeometry();
+        Object coordinates = geometry.getCoordinates();
+
+        if(geometry.getType().equals(Constants.POLYGON)) {
+            List<List<List<Double>>> polygonOutline = (ArrayList<List<List<Double>>>) coordinates;
+            addEachPolygonToMap(polygonOutline);
+        } else if (geometry.getType().equals(Constants.MULTIPOLYGON)) {
+            List<List<List<List<Double>>>> multiPolygonOutline = (ArrayList<List<List<List<Double>>>>) coordinates;
+            for(List<List<List<Double>>> polygonOutline: multiPolygonOutline) {
+                addEachPolygonToMap(polygonOutline);
+            }
+        }
+
+        if (selectedState != null) {
+            if (!outlineCallMaker.clickedState.equals(selectedState)) {
+                selectedState = outlineCallMaker.clickedState;
+            }
+        } else {
+            selectedState = outlineCallMaker.clickedState;
+        }
+
+    }
+
+    @Override
+    public void failure(RetrofitError error) {
+        error.printStackTrace();
+    }
+
+    private void addEachPolygonToMap(List<List<List<Double>>> polygonOutline) {
+        List<LatLng> polygon = makePolygonOfCoordinatePairs(polygonOutline);
+        polygonCollection.add(polygon);
+        addMostRecentPolygonToMap();
+    }
+
+    private List<LatLng> makePolygonOfCoordinatePairs(List<List<List<Double>>> polygonOutline) {
+        List<LatLng> polygon = new ArrayList<>();
+        for (List<Double> coordinatePair : polygonOutline.get(0)) {
+            double lng = coordinatePair.get(0);
+            double lat = coordinatePair.get(1);
+            polygon.add(new LatLng(lat, lng));
+        }
+        return polygon;
+    }
+
+    private void addMostRecentPolygonToMap() {
+        map.addPolygon(new PolygonOptions()
+                .addAll(polygonCollection.get(indexOfMostRecentPolygon))
+                .strokeColor(Color.BLACK)
+                .strokeWidth(2)
+                .fillColor(Color.WHITE));
+
+        indexOfMostRecentPolygon++;
+    }
+
+    @Override
+    public void clearMap() {
+        map.clear();
     }
 }
