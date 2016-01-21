@@ -1,6 +1,6 @@
 package com.detroitlabs.kyleofori.funwithcensusdata;
 
-import android.util.Log;
+import android.content.Context;
 
 import com.detroitlabs.kyleofori.funwithcensusdata.api.OutlinesApi;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
@@ -20,12 +20,14 @@ import retrofit.client.Response;
 public class OutlineCallMaker implements Callback<StatesModel> {
 
     public Callback<OutlinesModel> callback;
-    public String clickedState, selectedState;
+    public String clickedState;
     private MapClearingInterface mapClearingInterface;
+    private MainActivity mainActivity;
 
-    public OutlineCallMaker(Callback<OutlinesModel> callback, MapClearingInterface mapClearingInterface) {
-        this.callback = callback;
-        this.mapClearingInterface = mapClearingInterface;
+    public OutlineCallMaker(Context context) {
+        callback = (Callback<OutlinesModel>) context;
+        mapClearingInterface = (MapClearingInterface) context;
+        mainActivity = (MainActivity) context;
     }
 
     //TODO: don't let the call go forward if the address component that has a country in its type array doesn't have a short_name of US
@@ -43,12 +45,11 @@ public class OutlineCallMaker implements Callback<StatesModel> {
                 if (firstType.equals(Constants.AA_LEVEL_1)) {
                     stateName = component.getLongName();
                     clickedState = stateName;
-                    if (selectedState == null) {
+                    if (mainActivity.selectedState == null) {
                         makeHttpCallForStateOutlines();
                     } else {
                         mapClearingInterface.clearMap();
-                        Log.i("tag", "The map should have been cleared");
-                        if (!clickedState.equals(selectedState)) {
+                        if (!clickedState.equals(mainActivity.selectedState)) {
                             makeHttpCallForStateOutlines(); //uses variable clickedState to retrieve outline
                         } else { //this is for if you just unselected the selected state
                             resetStates();
@@ -72,13 +73,13 @@ public class OutlineCallMaker implements Callback<StatesModel> {
         OutlinesApi outlinesApi = restAdapter.create(OutlinesApi.class);
 
         outlinesApi.getOutlinesModel(callback);
-        selectedState = clickedState;
+        mainActivity.selectedState = clickedState;
     }
 
 
 
     private void resetStates() {
-        selectedState = null;
+        mainActivity.selectedState = null;
         clickedState = null;
     }
 }

@@ -3,7 +3,6 @@ package com.detroitlabs.kyleofori.funwithcensusdata;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -42,7 +41,7 @@ View.OnClickListener, GoogleMap.OnMapClickListener, Callback<OutlinesModel>, Map
     private TextView locationName;
     private ImageButton showButton;
     private ImageButton hideButton;
-    private String selectedState;
+    public String selectedState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +51,7 @@ View.OnClickListener, GoogleMap.OnMapClickListener, Callback<OutlinesModel>, Map
 
     private void init() {
         setContentView(R.layout.activity_main);
-        outlineCallMaker = new OutlineCallMaker(this, this);
+        outlineCallMaker = new OutlineCallMaker(this);
         setUpMapIfNeeded();
         initPopup();
     }
@@ -66,7 +65,7 @@ View.OnClickListener, GoogleMap.OnMapClickListener, Callback<OutlinesModel>, Map
 
     @Override
     public void onMapClick(LatLng latLng) {
-        makeHttpCallForStateNames(latLng); //sets variable clickedState
+        makeHttpCallForStateNames(latLng);
     }
 
     protected void makeHttpCallForStateNames(LatLng latLng) {
@@ -145,7 +144,6 @@ View.OnClickListener, GoogleMap.OnMapClickListener, Callback<OutlinesModel>, Map
                 locationName.setText(outlineCallMaker.clickedState);
             }
         }
-        Log.e("To see provs", "clicked state " + outlineCallMaker.clickedState);
         OutlinesModel.Feature.Geometry geometry = state.getGeometry();
         Object coordinates = geometry.getCoordinates();
 
@@ -166,7 +164,6 @@ View.OnClickListener, GoogleMap.OnMapClickListener, Callback<OutlinesModel>, Map
         } else {
             selectedState = outlineCallMaker.clickedState;
         }
-
     }
 
     @Override
@@ -203,5 +200,6 @@ View.OnClickListener, GoogleMap.OnMapClickListener, Callback<OutlinesModel>, Map
     @Override
     public void clearMap() {
         map.clear();
+        selectedState = null;
     }
 }
