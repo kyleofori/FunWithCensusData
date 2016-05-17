@@ -7,9 +7,6 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
 
-/**
- * Created by kyleofori on 7/30/15.
- */
 public class SlidingPanel extends LinearLayout {
     private Paint innerPaint, borderPaint ;
 

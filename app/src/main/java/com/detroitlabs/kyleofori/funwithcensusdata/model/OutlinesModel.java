@@ -4,9 +4,6 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
 
-/**
- * Created by kyleofori on 7/1/15.
- */
 public class OutlinesModel {
     private ArrayList<Feature> features;
 

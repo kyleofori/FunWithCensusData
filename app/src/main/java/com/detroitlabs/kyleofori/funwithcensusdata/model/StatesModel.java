@@ -2,9 +2,6 @@ package com.detroitlabs.kyleofori.funwithcensusdata.model;
 
 import java.util.ArrayList;
 
-/**
- * Created by kyleofori on 7/16/15.
- */
 public class StatesModel {
     private ArrayList<GoogleResult> results;
 

@@ -6,9 +6,6 @@ import retrofit.Callback;
 import retrofit.http.GET;
 import retrofit.http.Query;
 
-/**
- * Created by kyleofori on 7/16/15.
- */
 public interface StatesApi {
 
     @GET("/geocode/json")

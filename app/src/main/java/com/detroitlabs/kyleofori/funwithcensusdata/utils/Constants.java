@@ -1,8 +1,5 @@
 package com.detroitlabs.kyleofori.funwithcensusdata.utils;
 
-/**
- * Created by kyleofori on 7/16/15.
- */
 public class Constants {
 
     private Constants() {}
