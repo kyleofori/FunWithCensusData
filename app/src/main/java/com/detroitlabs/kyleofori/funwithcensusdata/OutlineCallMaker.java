@@ -16,9 +16,6 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-/**
- * Created by kyleofori on 1/21/16.
- */
 public class OutlineCallMaker implements Callback<StatesModel> {
 
     public Callback<OutlinesModel> callback;
