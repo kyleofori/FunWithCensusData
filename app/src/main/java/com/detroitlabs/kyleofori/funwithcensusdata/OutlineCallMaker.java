@@ -1,8 +1,10 @@
 package com.detroitlabs.kyleofori.funwithcensusdata;
 
 import android.content.Context;
+import android.os.Bundle;
 
 import com.detroitlabs.kyleofori.funwithcensusdata.api.OutlinesApi;
+import com.detroitlabs.kyleofori.funwithcensusdata.dialogs.OutsideClickDialogFragment;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.StatesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
@@ -34,9 +36,9 @@ public class OutlineCallMaker implements Callback<StatesModel> {
     public void success(StatesModel statesModel, Response response) {
         ArrayList<StatesModel.GoogleResult> results = statesModel.getResults();
         if (results.isEmpty()) {
-            System.out.println("You may have clicked in the wrong place"); //TODO: Make this a dialog
+            createOutsideClickDialogFragment(mainActivity.getString(R.string.body_of_water_message), "water");
         } else if (!statesModel.isInUSA()) {
-            System.out.println("This is not one of the fifty United States"); //TODO: Make this a dialog
+            createOutsideClickDialogFragment(mainActivity.getString(R.string.other_land_message), "land");
         } else {
             ArrayList<StatesModel.GoogleResult.AddressComponent> addressComponents = results.get(0).getAddressComponents();
             String stateName;
@@ -61,8 +63,6 @@ public class OutlineCallMaker implements Callback<StatesModel> {
         }
     }
 
-
-
     @Override
     public void failure(RetrofitError error) {
         error.printStackTrace();
@@ -79,7 +79,13 @@ public class OutlineCallMaker implements Callback<StatesModel> {
         mainActivity.selectedState = clickedState;
     }
 
-
+    private void createOutsideClickDialogFragment(String message, String tag) {
+        OutsideClickDialogFragment dialog = new OutsideClickDialogFragment();
+        Bundle arguments = new Bundle();
+        arguments.putCharSequence("message", message);
+        dialog.setArguments(arguments);
+        dialog.show(mainActivity.getFragmentManager(), tag);
+    }
 
     private void resetStates() {
         mainActivity.selectedState = null;

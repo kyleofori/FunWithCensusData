@@ -12,5 +12,8 @@
         button does not always have to be visible.</string>
     <string name="state_name_goes_here">(Name of state goes here)</string>
     <string name="retrieving_info">Retrieving information…</string>
+    <string name="body_of_water_message">This is a body of water, not one of the fifty United States.
+    </string>
+    <string name="other_land_message">This land is not in one of the fifty United States.</string>
 
 </resources>
