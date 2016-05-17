@@ -12,11 +12,29 @@ public class StatesModel {
         return results;
     }
 
+    public boolean isInUSA() {
+        for(StatesModel.GoogleResult result: results) {
+            if(result.isInUSA()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public class GoogleResult {
         private ArrayList<AddressComponent> address_components;
 
         public ArrayList<AddressComponent> getAddressComponents() {
             return address_components;
+        }
+
+        public boolean isInUSA() {
+            for(AddressComponent addressComponent: address_components) {
+                if (addressComponent.isInUSA()) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public class AddressComponent {
@@ -36,6 +54,10 @@ public class StatesModel {
 
             public ArrayList<String> getTypes() {
                 return types;
+            }
+
+            public boolean isInUSA() {
+                return getShortName().equals("US");
             }
         }
     }

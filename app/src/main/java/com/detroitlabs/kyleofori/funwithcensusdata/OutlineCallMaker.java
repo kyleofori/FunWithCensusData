@@ -30,12 +30,13 @@ public class OutlineCallMaker implements Callback<StatesModel> {
         mainActivity = (MainActivity) context;
     }
 
-    //TODO: don't let the call go forward if the address component that has a country in its type array doesn't have a short_name of US
     @Override
     public void success(StatesModel statesModel, Response response) {
         ArrayList<StatesModel.GoogleResult> results = statesModel.getResults();
         if (results.isEmpty()) {
-            System.out.println("You may have clicked in the wrong place");
+            System.out.println("You may have clicked in the wrong place"); //TODO: Make this a dialog
+        } else if (!statesModel.isInUSA()) {
+            System.out.println("This is not one of the fifty United States"); //TODO: Make this a dialog
         } else {
             ArrayList<StatesModel.GoogleResult.AddressComponent> addressComponents = results.get(0).getAddressComponents();
             String stateName;
@@ -59,6 +60,8 @@ public class OutlineCallMaker implements Callback<StatesModel> {
             }
         }
     }
+
+
 
     @Override
     public void failure(RetrofitError error) {
