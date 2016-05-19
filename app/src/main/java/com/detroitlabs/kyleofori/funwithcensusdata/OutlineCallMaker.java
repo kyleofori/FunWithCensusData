@@ -38,21 +38,19 @@ public class OutlineCallMaker implements Callback<StatesModel> {
             createOutsideClickDialogFragment(mainActivity.getString(R.string.other_land_message), "land");
         } else {
             ArrayList<StatesModel.GoogleResult.AddressComponent> addressComponents = results.get(0).getAddressComponents();
-            String stateName;
             for(StatesModel.GoogleResult.AddressComponent component: addressComponents) {
                 ArrayList<String> types = component.getTypes();
                 String firstType = types.get(0);
                 if (firstType.equals(Constants.AA_LEVEL_1)) {
-                    stateName = component.getLongName();
-                    clickedState = stateName;
+                    clickedState = component.getLongName();
                     if (mainActivity.selectedState == null) {
                         makeHttpCallForStateOutlines();
                     } else {
                         mapClearingInterface.clearMap();
-                        if (!clickedState.equals(mainActivity.selectedState)) {
-                            makeHttpCallForStateOutlines(); //uses variable clickedState to retrieve outline
-                        } else { //this is for if you just unselected the selected state
+                        if (clickedState.equals(mainActivity.selectedState)) {
                             resetStates();
+                        } else {
+                            makeHttpCallForStateOutlines();
                         }
                     }
                 }
