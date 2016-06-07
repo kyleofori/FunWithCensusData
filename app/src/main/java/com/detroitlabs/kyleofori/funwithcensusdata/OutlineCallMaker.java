@@ -18,71 +18,73 @@ import retrofit.client.Response;
 
 public class OutlineCallMaker implements Callback<StatesModel> {
 
-    public Callback<OutlinesModel> callback;
-    public String clickedStateName;
-    private MapClearingInterface mapClearingInterface;
-    private MainActivity mainActivity;
+  public Callback<OutlinesModel> callback;
+  public String clickedStateName;
+  private MapClearingInterface mapClearingInterface;
+  private MainActivity mainActivity;
 
-    public OutlineCallMaker(Context context) {
-        callback = (Callback<OutlinesModel>) context;
-        mapClearingInterface = (MapClearingInterface) context;
-        mainActivity = (MainActivity) context;
-    }
+  public OutlineCallMaker(Context context) {
+    callback = (Callback<OutlinesModel>) context;
+    mapClearingInterface = (MapClearingInterface) context;
+    mainActivity = (MainActivity) context;
+  }
 
-    @Override
-    public void success(StatesModel statesModel, Response response) {
-        ArrayList<StatesModel.GoogleResult> results = statesModel.getResults();
-        if (results.isEmpty()) {
-            createOutsideClickDialogFragment(mainActivity.getString(R.string.body_of_water_message), "water");
-        } else if (!statesModel.isInUSA()) {
-            createOutsideClickDialogFragment(mainActivity.getString(R.string.other_land_message), "land");
-        } else {
-            ArrayList<StatesModel.GoogleResult.AddressComponent> addressComponents = results.get(0).getAddressComponents();
-            for(StatesModel.GoogleResult.AddressComponent component: addressComponents) {
-                ArrayList<String> types = component.getTypes();
-                String firstType = types.get(0);
-                if (firstType.equals(Constants.AA_LEVEL_1)) {
-                    clickedStateName = component.getLongName();
-                    if (mainActivity.getSelectedStateFragment().getData() == null) {
-                        makeHttpCallForStateOutlines();
-                    } else {
-                        mapClearingInterface.clearMap();
-                        if (clickedStateName.equals(mainActivity.getSelectedStateFragment().getData().getProperties().getPoliticalUnitName())) {
-                            resetStates();
-                        } else {
-                            makeHttpCallForStateOutlines();
-                        }
-                    }
-                }
+  @Override public void success(StatesModel statesModel, Response response) {
+    ArrayList<StatesModel.GoogleResult> results = statesModel.getResults();
+    if (results.isEmpty()) {
+      createOutsideClickDialogFragment(mainActivity.getString(R.string.body_of_water_message),
+          "water");
+    } else if (!statesModel.isInUSA()) {
+      createOutsideClickDialogFragment(mainActivity.getString(R.string.other_land_message), "land");
+    } else {
+      ArrayList<StatesModel.GoogleResult.AddressComponent> addressComponents =
+          results.get(0).getAddressComponents();
+      for (StatesModel.GoogleResult.AddressComponent component : addressComponents) {
+        ArrayList<String> types = component.getTypes();
+        String firstType = types.get(0);
+        if (firstType.equals(Constants.AA_LEVEL_1)) {
+          clickedStateName = component.getLongName();
+          if (mainActivity.getSelectedStateFragment().getData() == null) {
+            makeHttpCallForStateOutlines();
+          } else {
+            mapClearingInterface.clearMap();
+            if (clickedStateName.equals(mainActivity.getSelectedStateFragment()
+                .getData()
+                .getProperties()
+                .getPoliticalUnitName())) {
+              resetStates();
+            } else {
+              makeHttpCallForStateOutlines();
             }
+          }
         }
+      }
     }
+  }
 
-    @Override
-    public void failure(RetrofitError error) {
-        error.printStackTrace();
-    }
+  @Override public void failure(RetrofitError error) {
+    error.printStackTrace();
+  }
 
-    protected void makeHttpCallForStateOutlines() {
-        RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint(Constants.ERIC_CLST_API_BASE_URL)
-                .build();
+  protected void makeHttpCallForStateOutlines() {
+    RestAdapter restAdapter =
+        new RestAdapter.Builder().setEndpoint(Constants.ERIC_CLST_API_BASE_URL).build();
 
-        OutlinesApi outlinesApi = restAdapter.create(OutlinesApi.class);
+    OutlinesApi outlinesApi = restAdapter.create(OutlinesApi.class);
 
-        outlinesApi.getOutlinesModel(callback);
-    }
+    outlinesApi.getOutlinesModel(callback);
+  }
 
-    private void createOutsideClickDialogFragment(String message, String tag) {
-        OutsideClickDialogFragment dialog = new OutsideClickDialogFragment();
-        Bundle arguments = new Bundle();
-        arguments.putCharSequence("message", message);
-        dialog.setArguments(arguments);
-        dialog.show(mainActivity.getFragmentManager(), tag);
-    }
+  private void createOutsideClickDialogFragment(String message, String tag) {
+    OutsideClickDialogFragment dialog = new OutsideClickDialogFragment();
+    Bundle arguments = new Bundle();
+    arguments.putCharSequence("message", message);
+    dialog.setArguments(arguments);
+    dialog.show(mainActivity.getFragmentManager(), tag);
+  }
 
-    private void resetStates() {
-        mainActivity.getSelectedStateFragment().setData(null);
-        clickedStateName = null;
-    }
+  private void resetStates() {
+    mainActivity.getSelectedStateFragment().setData(null);
+    clickedStateName = null;
+  }
 }
