@@ -2,13 +2,13 @@ package com.detroitlabs.kyleofori.funwithcensusdata;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.TextView;
-
 import com.detroitlabs.kyleofori.funwithcensusdata.api.StatesApi;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
@@ -17,10 +17,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import retrofit.Callback;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
@@ -28,6 +26,8 @@ import retrofit.client.Response;
 
 public class MainActivity extends AppCompatActivity implements
 View.OnClickListener, GoogleMap.OnMapClickListener, Callback<OutlinesModel>, MapClearingInterface {
+
+    public SelectedStateFragment selectedStateFragment;
 
     private static final LatLng USA_COORDINATES = new LatLng(39, -98);
     private static final int USA_ZOOM_LEVEL = 3;
@@ -41,7 +41,6 @@ View.OnClickListener, GoogleMap.OnMapClickListener, Callback<OutlinesModel>, Map
     private TextView locationName;
     private ImageButton showButton;
     private ImageButton hideButton;
-    public String selectedState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +53,18 @@ View.OnClickListener, GoogleMap.OnMapClickListener, Callback<OutlinesModel>, Map
         outlineCallMaker = new OutlineCallMaker(this);
         setUpMapIfNeeded();
         initPopup();
+        FragmentManager manager = getSupportFragmentManager();
+        selectedStateFragment = (SelectedStateFragment) manager.findFragmentByTag("selected_state");
+
+        if(selectedStateFragment == null) {
+            selectedStateFragment = new SelectedStateFragment();
+            manager.beginTransaction().add(selectedStateFragment, "selected_state").commit();
+        }
+
+        if(selectedStateFragment.getData() != null) {
+            highlightState(selectedStateFragment.getData());
+        }
+
     }
 
     @Override
@@ -100,6 +111,10 @@ View.OnClickListener, GoogleMap.OnMapClickListener, Callback<OutlinesModel>, Map
         }
     }
 
+    public SelectedStateFragment getSelectedStateFragment() {
+        return selectedStateFragment;
+    }
+
     private void setUpMapIfNeeded() {
         if (map == null) {
             map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
@@ -131,19 +146,23 @@ View.OnClickListener, GoogleMap.OnMapClickListener, Callback<OutlinesModel>, Map
 
         locationDescription.setText(R.string.state_information);
     }
-
     //******************Methods for Callback<OutlinesModel>*****************//
 
     @Override
     public void success(OutlinesModel outlinesModel, Response response) {
         ArrayList<OutlinesModel.Feature> features = outlinesModel.getFeatures();
-        OutlinesModel.Feature state = null;
-        for(OutlinesModel.Feature feature: features) {
-            if(feature.getProperties().getPoliticalUnitName().equals(outlineCallMaker.clickedState)) {
-                state = feature;
-                locationName.setText(outlineCallMaker.clickedState);
+        OutlinesModel.Feature selectedState = null;
+        for(OutlinesModel.Feature feature: features) { //TODO: don't assign state to feature in each iteration
+            if(feature.getProperties().getPoliticalUnitName().equals(outlineCallMaker.clickedStateName)) {
+                selectedState = feature;
+                locationName.setText(outlineCallMaker.clickedStateName);
             }
         }
+        selectedStateFragment.setData(selectedState);
+        highlightState(selectedState);
+    }
+
+    private void highlightState(OutlinesModel.Feature state) {
         OutlinesModel.Feature.Geometry geometry = state.getGeometry();
         Object coordinates = geometry.getCoordinates();
 
@@ -155,14 +174,6 @@ View.OnClickListener, GoogleMap.OnMapClickListener, Callback<OutlinesModel>, Map
             for(List<List<List<Double>>> polygonOutline: multiPolygonOutline) {
                 addEachPolygonToMap(polygonOutline);
             }
-        }
-
-        if (selectedState != null) {
-            if (!outlineCallMaker.clickedState.equals(selectedState)) {
-                selectedState = outlineCallMaker.clickedState;
-            }
-        } else {
-            selectedState = outlineCallMaker.clickedState;
         }
     }
 
@@ -200,6 +211,5 @@ View.OnClickListener, GoogleMap.OnMapClickListener, Callback<OutlinesModel>, Map
     @Override
     public void clearMap() {
         map.clear();
-        selectedState = null;
     }
 }

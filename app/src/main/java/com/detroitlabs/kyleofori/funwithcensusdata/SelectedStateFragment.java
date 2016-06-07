@@ -1,11 +1,9 @@
 package com.detroitlabs.kyleofori.funwithcensusdata;
 
-import android.app.Fragment;
 import android.os.Bundle;
-
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
 
-public class SelectedStateFragment extends Fragment {
+public class SelectedStateFragment extends android.support.v4.app.Fragment {
     private OutlinesModel.Feature feature;
 
     @Override

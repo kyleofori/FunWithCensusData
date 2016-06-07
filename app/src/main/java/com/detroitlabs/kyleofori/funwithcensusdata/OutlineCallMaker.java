@@ -19,7 +19,7 @@ import retrofit.client.Response;
 public class OutlineCallMaker implements Callback<StatesModel> {
 
     public Callback<OutlinesModel> callback;
-    public String clickedState;
+    public String clickedStateName;
     private MapClearingInterface mapClearingInterface;
     private MainActivity mainActivity;
 
@@ -42,12 +42,12 @@ public class OutlineCallMaker implements Callback<StatesModel> {
                 ArrayList<String> types = component.getTypes();
                 String firstType = types.get(0);
                 if (firstType.equals(Constants.AA_LEVEL_1)) {
-                    clickedState = component.getLongName();
-                    if (mainActivity.selectedState == null) {
+                    clickedStateName = component.getLongName();
+                    if (mainActivity.getSelectedStateFragment().getData() == null) {
                         makeHttpCallForStateOutlines();
                     } else {
                         mapClearingInterface.clearMap();
-                        if (clickedState.equals(mainActivity.selectedState)) {
+                        if (clickedStateName.equals(mainActivity.getSelectedStateFragment().getData().getProperties().getPoliticalUnitName())) {
                             resetStates();
                         } else {
                             makeHttpCallForStateOutlines();
@@ -71,7 +71,6 @@ public class OutlineCallMaker implements Callback<StatesModel> {
         OutlinesApi outlinesApi = restAdapter.create(OutlinesApi.class);
 
         outlinesApi.getOutlinesModel(callback);
-        mainActivity.selectedState = clickedState;
     }
 
     private void createOutsideClickDialogFragment(String message, String tag) {
@@ -83,7 +82,7 @@ public class OutlineCallMaker implements Callback<StatesModel> {
     }
 
     private void resetStates() {
-        mainActivity.selectedState = null;
-        clickedState = null;
+        mainActivity.getSelectedStateFragment().setData(null);
+        clickedStateName = null;
     }
 }
