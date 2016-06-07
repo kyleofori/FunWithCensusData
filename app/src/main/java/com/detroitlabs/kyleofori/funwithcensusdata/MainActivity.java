@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity
   private SlidingPanel popup;
   private GoogleMap map;
   private Animation animShow, animHide;
+
   private TextView locationName;
   private ImageButton showButton;
   private ImageButton hideButton;
@@ -63,6 +64,8 @@ public class MainActivity extends AppCompatActivity
 
     if (selectedStateFragment.getData() != null) {
       highlightState(selectedStateFragment.getData());
+      locationName.setText(selectedStateFragment.getData().getProperties().getPoliticalUnitName());
+
     }
   }
 
@@ -102,6 +105,10 @@ public class MainActivity extends AppCompatActivity
         popup.setVisibility(View.GONE);
         break;
     }
+  }
+
+  public TextView getLocationName() {
+    return locationName;
   }
 
   public SelectedStateFragment getSelectedStateFragment() {
@@ -144,15 +151,13 @@ public class MainActivity extends AppCompatActivity
     ArrayList<OutlinesModel.Feature> features = outlinesModel.getFeatures();
     OutlinesModel.Feature selectedState = null;
     for (OutlinesModel.Feature feature : features) { //TODO: don't assign state to feature in each iteration
-      if (feature.getProperties()
-          .getPoliticalUnitName()
-          .equals(outlineCallMaker.clickedStateName)) {
+      if (feature.getProperties().getPoliticalUnitName().equals(outlineCallMaker.clickedStateName)) {
         selectedState = feature;
-        locationName.setText(outlineCallMaker.clickedStateName);
+        selectedStateFragment.setData(selectedState);
+        highlightState(selectedState);
+        locationName.setText(selectedState.getProperties().getPoliticalUnitName());
       }
     }
-    selectedStateFragment.setData(selectedState);
-    highlightState(selectedState);
   }
 
   private void highlightState(OutlinesModel.Feature state) {

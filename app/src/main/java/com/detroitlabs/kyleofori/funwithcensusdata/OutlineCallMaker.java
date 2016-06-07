@@ -85,6 +85,7 @@ public class OutlineCallMaker implements Callback<StatesModel> {
 
   private void resetStates() {
     mainActivity.getSelectedStateFragment().setData(null);
+    mainActivity.getLocationName().setText(R.string.state_name_goes_here);
     clickedStateName = null;
   }
 }
