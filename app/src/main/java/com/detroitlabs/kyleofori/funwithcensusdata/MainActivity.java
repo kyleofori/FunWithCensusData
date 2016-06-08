@@ -46,8 +46,7 @@ public class MainActivity extends AppCompatActivity
   public AcsSurveyModelCallback acsSurveyModelCallback;
 
   private TextView locationName;
-
-  public TextView locationDescription;
+  private TextView locationDescription;
   private ImageButton showButton;
   private ImageButton hideButton;
   private HashMap<String, String> statesHashMap;
@@ -121,10 +120,6 @@ public class MainActivity extends AppCompatActivity
 
   public TextView getLocationName() {
     return locationName;
-  }
-
-  public TextView getLocationDescription() {
-    return locationDescription;
   }
 
   public SelectedStateFragment getSelectedStateFragment() {
@@ -256,6 +251,6 @@ public class MainActivity extends AppCompatActivity
   }
 
   @Override public void onAccessedSurveyData(String data) {
-   locationDescription.setText(data); //Not the best way to go about this--separation of concerns
+   locationDescription.setText(data);
   }
 }
