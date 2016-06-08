@@ -22,8 +22,15 @@ public class OutlinesModel {
             @SerializedName("NAME")
             private String politicalUnitName;
 
+            @SerializedName("STATE")
+            private String stateNumber;
+
             public String getPoliticalUnitName() {
                 return politicalUnitName;
+            }
+
+            public String getStateNumber() {
+                return stateNumber;
             }
         }
 

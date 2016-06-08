@@ -7,5 +7,5 @@ import retrofit.http.Query;
 
 public interface AcsSurveyApi {
   @GET("/")
-  void getAcsSurveyModel(@Query("get") String nameAndVariable, @Query("for") String stateNumber, Callback<ArrayList<ArrayList<String>>> callback);
+  void getAcsSurveyInformation(@Query("get") String nameAndVariable, @Query("for") String stateNumber, Callback<ArrayList<ArrayList<String>>> callback);
 }

@@ -2,8 +2,6 @@ package com.detroitlabs.kyleofori.funwithcensusdata;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
-import com.detroitlabs.kyleofori.funwithcensusdata.api.AcsSurveyApi;
 import com.detroitlabs.kyleofori.funwithcensusdata.api.OutlinesApi;
 import com.detroitlabs.kyleofori.funwithcensusdata.dialogs.OutsideClickDialogFragment;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
@@ -45,7 +43,6 @@ public class OutlineCallMaker implements Callback<StatesModel> {
           clickedStateName = component.getLongName();
           if (mainActivity.getSelectedStateFragment().getData() == null) {
             makeHttpCallForStateOutlines();
-            makeHttpCallForAcsData();
           } else {
             mapClearingInterface.clearMap();
             if (clickedStateName.equals(mainActivity.getSelectedStateFragment()
@@ -55,7 +52,6 @@ public class OutlineCallMaker implements Callback<StatesModel> {
               resetStates();
             } else {
               makeHttpCallForStateOutlines();
-              makeHttpCallForAcsData();
             }
           }
         }
@@ -76,15 +72,7 @@ public class OutlineCallMaker implements Callback<StatesModel> {
     outlinesApi.getOutlinesModel(outlinesModelCallback);
   }
 
-  protected void makeHttpCallForAcsData() {
-    RestAdapter restAdapter =
-        new RestAdapter.Builder().setEndpoint(Constants.ACS_2014_API_BASE_URL).build();
 
-    AcsSurveyApi acsSurveyApi = restAdapter.create(AcsSurveyApi.class);
-    Log.i("OutlineCallMaker", "made it here");
-    acsSurveyApi.getAcsSurveyModel("NAME,B01001B_007E", "state:34", mainActivity.acsSurveyModelCallback);
-
-  }
 
   private void createOutsideClickDialogFragment(String message, String tag) {
     OutsideClickDialogFragment dialog = new OutsideClickDialogFragment();

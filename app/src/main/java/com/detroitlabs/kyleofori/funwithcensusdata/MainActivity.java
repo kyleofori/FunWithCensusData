@@ -4,12 +4,15 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import com.detroitlabs.kyleofori.funwithcensusdata.api.AcsSurveyApi;
 import com.detroitlabs.kyleofori.funwithcensusdata.api.StatesApi;
+import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.SurveyDataResponder;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -18,6 +21,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import retrofit.Callback;
 import retrofit.RestAdapter;
@@ -26,7 +30,7 @@ import retrofit.client.Response;
 
 public class MainActivity extends AppCompatActivity
     implements View.OnClickListener, GoogleMap.OnMapClickListener, Callback<OutlinesModel>,
-    MapClearingInterface {
+    MapClearingInterface, SurveyDataResponder {
 
   public SelectedStateFragment selectedStateFragment;
 
@@ -42,9 +46,11 @@ public class MainActivity extends AppCompatActivity
   public AcsSurveyModelCallback acsSurveyModelCallback;
 
   private TextView locationName;
-  private TextView locationDescription;
+
+  public TextView locationDescription;
   private ImageButton showButton;
   private ImageButton hideButton;
+  private HashMap<String, String> statesHashMap;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -54,7 +60,7 @@ public class MainActivity extends AppCompatActivity
   private void init() {
     setContentView(R.layout.activity_main);
     outlineCallMaker = new OutlineCallMaker(this);
-    acsSurveyModelCallback = new AcsSurveyModelCallback();
+    acsSurveyModelCallback = new AcsSurveyModelCallback(this);
     setUpMapIfNeeded();
     initPopup();
     initSelectedStateFragment();
@@ -117,7 +123,9 @@ public class MainActivity extends AppCompatActivity
     return locationName;
   }
 
-
+  public TextView getLocationDescription() {
+    return locationDescription;
+  }
 
   public SelectedStateFragment getSelectedStateFragment() {
     return selectedStateFragment;
@@ -162,16 +170,40 @@ public class MainActivity extends AppCompatActivity
 
   @Override public void success(OutlinesModel outlinesModel, Response response) {
     ArrayList<OutlinesModel.Feature> features = outlinesModel.getFeatures();
-    OutlinesModel.Feature selectedState = null;
+    OutlinesModel.Feature selectedState;
+    if(statesHashMap == null) {
+      statesHashMap = createHashMap(features);
+    }
     for (OutlinesModel.Feature feature : features) { //TODO: don't assign state to feature in each iteration
       if (feature.getProperties().getPoliticalUnitName().equals(outlineCallMaker.clickedStateName)) {
         selectedState = feature;
         selectedStateFragment.setData(selectedState);
         highlightState(selectedState);
         locationName.setText(selectedState.getProperties().getPoliticalUnitName());
-        locationDescription.setText(acsSurveyModelCallback.getVariable()); //Not the best way to go about this--separation of concerns
+        makeHttpCallForAcsData(selectedState.getProperties().getPoliticalUnitName());
       }
     }
+
+  }
+
+  private HashMap<String, String> createHashMap(ArrayList<OutlinesModel.Feature> features) {
+    HashMap<String, String> hashMap = new HashMap<>();
+    for(OutlinesModel.Feature feature: features) {
+      hashMap.put(feature.getProperties().getPoliticalUnitName(), feature.getProperties().getStateNumber());
+    }
+    return hashMap;
+  }
+
+  private void makeHttpCallForAcsData(String stateName) {
+    RestAdapter restAdapter =
+        new RestAdapter.Builder().setEndpoint(Constants.ACS_2014_API_BASE_URL).build();
+
+    AcsSurveyApi acsSurveyApi = restAdapter.create(AcsSurveyApi.class);
+    Log.i("OutlineCallMaker", "made it here");
+
+
+    acsSurveyApi.getAcsSurveyInformation("NAME,B01001B_007E", "state:" + statesHashMap.get(stateName), acsSurveyModelCallback);
+
   }
 
   private void highlightState(OutlinesModel.Feature state) {
@@ -221,5 +253,9 @@ public class MainActivity extends AppCompatActivity
 
   @Override public void clearMap() {
     map.clear();
+  }
+
+  @Override public void onAccessedSurveyData(String data) {
+   locationDescription.setText(data); //Not the best way to go about this--separation of concerns
   }
 }
