@@ -2,15 +2,14 @@ package com.detroitlabs.kyleofori.funwithcensusdata;
 
 import android.content.Context;
 import android.os.Bundle;
-
+import android.util.Log;
+import com.detroitlabs.kyleofori.funwithcensusdata.api.AcsSurveyApi;
 import com.detroitlabs.kyleofori.funwithcensusdata.api.OutlinesApi;
 import com.detroitlabs.kyleofori.funwithcensusdata.dialogs.OutsideClickDialogFragment;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.StatesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
-
 import java.util.ArrayList;
-
 import retrofit.Callback;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
@@ -18,13 +17,13 @@ import retrofit.client.Response;
 
 public class OutlineCallMaker implements Callback<StatesModel> {
 
-  public Callback<OutlinesModel> callback;
+  public Callback<OutlinesModel> outlinesModelCallback;
   public String clickedStateName;
   private MapClearingInterface mapClearingInterface;
   private MainActivity mainActivity;
 
   public OutlineCallMaker(Context context) {
-    callback = (Callback<OutlinesModel>) context;
+    outlinesModelCallback = (Callback<OutlinesModel>) context;
     mapClearingInterface = (MapClearingInterface) context;
     mainActivity = (MainActivity) context;
   }
@@ -46,6 +45,7 @@ public class OutlineCallMaker implements Callback<StatesModel> {
           clickedStateName = component.getLongName();
           if (mainActivity.getSelectedStateFragment().getData() == null) {
             makeHttpCallForStateOutlines();
+            makeHttpCallForAcsData();
           } else {
             mapClearingInterface.clearMap();
             if (clickedStateName.equals(mainActivity.getSelectedStateFragment()
@@ -55,6 +55,7 @@ public class OutlineCallMaker implements Callback<StatesModel> {
               resetStates();
             } else {
               makeHttpCallForStateOutlines();
+              makeHttpCallForAcsData();
             }
           }
         }
@@ -72,7 +73,17 @@ public class OutlineCallMaker implements Callback<StatesModel> {
 
     OutlinesApi outlinesApi = restAdapter.create(OutlinesApi.class);
 
-    outlinesApi.getOutlinesModel(callback);
+    outlinesApi.getOutlinesModel(outlinesModelCallback);
+  }
+
+  protected void makeHttpCallForAcsData() {
+    RestAdapter restAdapter =
+        new RestAdapter.Builder().setEndpoint(Constants.ACS_2014_API_BASE_URL).build();
+
+    AcsSurveyApi acsSurveyApi = restAdapter.create(AcsSurveyApi.class);
+    Log.i("OutlineCallMaker", "made it here");
+    acsSurveyApi.getAcsSurveyModel("NAME,B01001B_007E", "state:34", mainActivity.acsSurveyModelCallback);
+
   }
 
   private void createOutsideClickDialogFragment(String message, String tag) {

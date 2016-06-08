@@ -39,8 +39,10 @@ public class MainActivity extends AppCompatActivity
   private SlidingPanel popup;
   private GoogleMap map;
   private Animation animShow, animHide;
+  public AcsSurveyModelCallback acsSurveyModelCallback;
 
   private TextView locationName;
+  private TextView locationDescription;
   private ImageButton showButton;
   private ImageButton hideButton;
 
@@ -52,8 +54,13 @@ public class MainActivity extends AppCompatActivity
   private void init() {
     setContentView(R.layout.activity_main);
     outlineCallMaker = new OutlineCallMaker(this);
+    acsSurveyModelCallback = new AcsSurveyModelCallback();
     setUpMapIfNeeded();
     initPopup();
+    initSelectedStateFragment();
+  }
+
+  private void initSelectedStateFragment() {
     FragmentManager manager = getSupportFragmentManager();
     selectedStateFragment = (SelectedStateFragment) manager.findFragmentByTag("selected_state");
 
@@ -65,7 +72,6 @@ public class MainActivity extends AppCompatActivity
     if (selectedStateFragment.getData() != null) {
       highlightState(selectedStateFragment.getData());
       locationName.setText(selectedStateFragment.getData().getProperties().getPoliticalUnitName());
-
     }
   }
 
@@ -111,6 +117,8 @@ public class MainActivity extends AppCompatActivity
     return locationName;
   }
 
+
+
   public SelectedStateFragment getSelectedStateFragment() {
     return selectedStateFragment;
   }
@@ -141,9 +149,14 @@ public class MainActivity extends AppCompatActivity
     animHide = AnimationUtils.loadAnimation(this, R.anim.popup_hide);
 
     locationName = (TextView) findViewById(R.id.site_name);
-    TextView locationDescription = (TextView) findViewById(R.id.site_description);
+    locationDescription = (TextView) findViewById(R.id.site_description);
 
-    locationDescription.setText(R.string.state_information);
+
+    if (acsSurveyModelCallback.getVariable() != null) {
+      locationDescription.setText(acsSurveyModelCallback.getVariable());
+    } else {
+      locationDescription.setText(R.string.state_information);
+    }
   }
   //******************Methods for Callback<OutlinesModel>*****************//
 
@@ -156,6 +169,7 @@ public class MainActivity extends AppCompatActivity
         selectedStateFragment.setData(selectedState);
         highlightState(selectedState);
         locationName.setText(selectedState.getProperties().getPoliticalUnitName());
+        locationDescription.setText(acsSurveyModelCallback.getVariable()); //Not the best way to go about this--separation of concerns
       }
     }
   }

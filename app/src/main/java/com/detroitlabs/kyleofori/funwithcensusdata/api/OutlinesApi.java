@@ -8,5 +8,5 @@ import retrofit.http.GET;
 public interface OutlinesApi {
     @GET("/wupl/Stuff/gz_2010_us_040_00_20m.json")
     void getOutlinesModel(Callback<OutlinesModel> callback);
-    //callback is the response from the server which is now in the POJO
+    //outlinesModelCallback is the response from the server which is now in the POJO
 }
