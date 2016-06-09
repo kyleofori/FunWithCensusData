@@ -41,12 +41,12 @@ public class OutlineCallMaker implements Callback<StatesModel> {
         String firstType = types.get(0);
         if (firstType.equals(Constants.AA_LEVEL_1)) {
           clickedStateName = component.getLongName();
-          if (mainActivity.getSelectedStateFragment().getData() == null) {
+          if (mainActivity.getSelectedStateFragment().getFeature() == null) {
             makeHttpCallForStateOutlines();
           } else {
             mapClearingInterface.clearMap();
             if (clickedStateName.equals(mainActivity.getSelectedStateFragment()
-                .getData()
+                .getFeature()
                 .getProperties()
                 .getPoliticalUnitName())) {
               resetStates();
@@ -83,7 +83,7 @@ public class OutlineCallMaker implements Callback<StatesModel> {
   }
 
   private void resetStates() {
-    mainActivity.getSelectedStateFragment().setData(null);
+    mainActivity.getSelectedStateFragment().setFeature(null);
     mainActivity.getLocationName().setText(R.string.state_name_goes_here);
     clickedStateName = null;
   }

@@ -74,9 +74,12 @@ public class MainActivity extends AppCompatActivity
       manager.beginTransaction().add(selectedStateFragment, "selected_state").commit();
     }
 
-    if (selectedStateFragment.getData() != null) {
-      highlightState(selectedStateFragment.getData());
-      locationName.setText(selectedStateFragment.getData().getProperties().getPoliticalUnitName());
+    if (selectedStateFragment.getFeature() != null) {
+      highlightState(selectedStateFragment.getFeature());
+      locationName.setText(selectedStateFragment.getFeature().getProperties().getPoliticalUnitName());
+    }
+    if (selectedStateFragment.getInformation() != null) {
+      locationDescription.setText(selectedStateFragment.getInformation());
     }
   }
 
@@ -172,7 +175,7 @@ public class MainActivity extends AppCompatActivity
     for (OutlinesModel.Feature feature : features) { //TODO: don't assign state to feature in each iteration
       if (feature.getProperties().getPoliticalUnitName().equals(outlineCallMaker.clickedStateName)) {
         selectedState = feature;
-        selectedStateFragment.setData(selectedState);
+        selectedStateFragment.setFeature(selectedState);
         highlightState(selectedState);
         locationName.setText(selectedState.getProperties().getPoliticalUnitName());
         makeHttpCallForAcsData(selectedState.getProperties().getPoliticalUnitName());
@@ -252,5 +255,6 @@ public class MainActivity extends AppCompatActivity
 
   @Override public void onAccessedSurveyData(String data) {
    locationDescription.setText(data);
+    selectedStateFragment.setInformation(data);
   }
 }
