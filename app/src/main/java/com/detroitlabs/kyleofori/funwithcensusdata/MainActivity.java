@@ -12,6 +12,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import com.detroitlabs.kyleofori.funwithcensusdata.api.AcsSurveyApi;
 import com.detroitlabs.kyleofori.funwithcensusdata.api.StatesApi;
+import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.StateOutlinesResponder;
 import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.SurveyDataResponder;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
@@ -23,14 +24,11 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import retrofit.Callback;
 import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
 
 public class MainActivity extends AppCompatActivity
-    implements View.OnClickListener, GoogleMap.OnMapClickListener, Callback<OutlinesModel>,
-    MapClearingInterface, SurveyDataResponder {
+    implements View.OnClickListener, GoogleMap.OnMapClickListener,
+    MapClearingInterface, SurveyDataResponder, StateOutlinesResponder {
 
   public SelectedStateFragment selectedStateFragment;
 
@@ -157,7 +155,6 @@ public class MainActivity extends AppCompatActivity
     locationName = (TextView) findViewById(R.id.site_name);
     locationDescription = (TextView) findViewById(R.id.site_description);
 
-
     if (acsSurveyModelCallback.getVariable() != null) {
       locationDescription.setText(acsSurveyModelCallback.getVariable());
     } else {
@@ -167,7 +164,7 @@ public class MainActivity extends AppCompatActivity
 
   private HashMap<String, String> createHashMap(ArrayList<OutlinesModel.Feature> features) {
     HashMap<String, String> hashMap = new HashMap<>();
-    for(OutlinesModel.Feature feature: features) {
+    for (OutlinesModel.Feature feature : features) {
       hashMap.put(feature.getProperties().getPoliticalUnitName(), feature.getProperties().getStateNumber());
     }
     return hashMap;
@@ -180,9 +177,7 @@ public class MainActivity extends AppCompatActivity
     AcsSurveyApi acsSurveyApi = restAdapter.create(AcsSurveyApi.class);
     Log.i("OutlineCallMaker", "made it here");
 
-
     acsSurveyApi.getAcsSurveyInformation("NAME,B01001B_007E", "state:" + statesHashMap.get(stateName), acsSurveyModelCallback);
-
   }
 
   private void highlightState(OutlinesModel.Feature state) {
@@ -231,19 +226,17 @@ public class MainActivity extends AppCompatActivity
   }
 
   @Override public void onAccessedSurveyData(String data) {
-   locationDescription.setText(data);
+    locationDescription.setText(data);
     selectedStateFragment.setInformation(data);
   }
 
-  //******************Methods for Callback<OutlinesModel>*****************//
-
-  @Override public void success(OutlinesModel outlinesModel, Response response) {
-    ArrayList<OutlinesModel.Feature> features = outlinesModel.getFeatures();
+  @Override public void onStateOutlinesReceived(OutlinesModel model) {
+    ArrayList<OutlinesModel.Feature> features = model.getFeatures();
     OutlinesModel.Feature selectedState;
-    if(statesHashMap == null) {
+    if (statesHashMap == null) {
       statesHashMap = createHashMap(features);
     }
-    for (OutlinesModel.Feature feature : features) { //TODO: don't assign state to feature in each iteration
+    for (OutlinesModel.Feature feature : features) {
       if (feature.getProperties().getPoliticalUnitName().equals(outlineCallMaker.clickedStateName)) {
         selectedState = feature;
         selectedStateFragment.setFeature(selectedState);
@@ -253,8 +246,5 @@ public class MainActivity extends AppCompatActivity
       }
     }
   }
-
-  @Override public void failure(RetrofitError error) {
-    error.printStackTrace();
-  }
 }
+

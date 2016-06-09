@@ -2,37 +2,57 @@ package com.detroitlabs.kyleofori.funwithcensusdata;
 
 import android.content.Context;
 import android.os.Bundle;
-import com.detroitlabs.kyleofori.funwithcensusdata.api.OutlinesApi;
 import com.detroitlabs.kyleofori.funwithcensusdata.dialogs.OutsideClickDialogFragment;
+import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.StateOutlinesResponder;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.StatesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
+import com.google.gson.Gson;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import retrofit.Callback;
-import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 public class OutlineCallMaker implements Callback<StatesModel> {
 
-  public Callback<OutlinesModel> outlinesModelCallback;
   public String clickedStateName;
   private MapClearingInterface mapClearingInterface;
   private MainActivity mainActivity;
+  private StateOutlinesResponder stateOutlinesResponder;
+  private Gson gson;
+  private OutlinesModel model;
 
   public OutlineCallMaker(Context context) {
-    outlinesModelCallback = (Callback<OutlinesModel>) context;
     mapClearingInterface = (MapClearingInterface) context;
+    stateOutlinesResponder = (StateOutlinesResponder) context;
     mainActivity = (MainActivity) context;
   }
 
-  protected void makeHttpCallForStateOutlines() {
-    RestAdapter restAdapter =
-        new RestAdapter.Builder().setEndpoint(Constants.ERIC_CLST_API_BASE_URL).build();
+  protected void retrieveStateOutlines() {
+    if(gson == null && model == null) {
+      gson = new Gson();
+      model = gson.fromJson(loadJsonStringFromAsset(), OutlinesModel.class);
+    }
+    stateOutlinesResponder.onStateOutlinesReceived(model);
 
-    OutlinesApi outlinesApi = restAdapter.create(OutlinesApi.class);
+  }
 
-    outlinesApi.getOutlinesModel(outlinesModelCallback);
+  private String loadJsonStringFromAsset() {
+    String json;
+    try {
+      InputStream inputStream = mainActivity.getAssets().open("ERIC-CLST-Outline.json");
+      int size = inputStream.available();
+      byte[] buffer = new byte[size];
+      inputStream.read(buffer);
+      inputStream.close();
+      json = new String(buffer, "UTF-8");
+    } catch (IOException e) {
+      e.printStackTrace();
+      return null;
+    }
+    return json;
   }
 
 
@@ -69,7 +89,7 @@ public class OutlineCallMaker implements Callback<StatesModel> {
         if (firstType.equals(Constants.AA_LEVEL_1)) {
           clickedStateName = component.getLongName();
           if (mainActivity.getSelectedStateFragment().getFeature() == null) {
-            makeHttpCallForStateOutlines();
+            retrieveStateOutlines();
           } else {
             mapClearingInterface.clearMap();
             if (clickedStateName.equals(mainActivity.getSelectedStateFragment()
@@ -78,7 +98,7 @@ public class OutlineCallMaker implements Callback<StatesModel> {
                 .getPoliticalUnitName())) {
               resetStates();
             } else {
-              makeHttpCallForStateOutlines();
+              retrieveStateOutlines();
             }
           }
         }
