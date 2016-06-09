@@ -26,6 +26,33 @@ public class OutlineCallMaker implements Callback<StatesModel> {
     mainActivity = (MainActivity) context;
   }
 
+  protected void makeHttpCallForStateOutlines() {
+    RestAdapter restAdapter =
+        new RestAdapter.Builder().setEndpoint(Constants.ERIC_CLST_API_BASE_URL).build();
+
+    OutlinesApi outlinesApi = restAdapter.create(OutlinesApi.class);
+
+    outlinesApi.getOutlinesModel(outlinesModelCallback);
+  }
+
+
+
+  private void createOutsideClickDialogFragment(String message, String tag) {
+    OutsideClickDialogFragment dialog = new OutsideClickDialogFragment();
+    Bundle arguments = new Bundle();
+    arguments.putCharSequence("message", message);
+    dialog.setArguments(arguments);
+    dialog.show(mainActivity.getFragmentManager(), tag);
+  }
+
+  private void resetStates() {
+    mainActivity.getSelectedStateFragment().setFeature(null);
+    mainActivity.getLocationName().setText(R.string.state_name_goes_here);
+    clickedStateName = null;
+  }
+
+  //******************Methods for Callback<StatesModel>*****************//
+
   @Override public void success(StatesModel statesModel, Response response) {
     ArrayList<StatesModel.GoogleResult> results = statesModel.getResults();
     if (results.isEmpty()) {
@@ -61,30 +88,5 @@ public class OutlineCallMaker implements Callback<StatesModel> {
 
   @Override public void failure(RetrofitError error) {
     error.printStackTrace();
-  }
-
-  protected void makeHttpCallForStateOutlines() {
-    RestAdapter restAdapter =
-        new RestAdapter.Builder().setEndpoint(Constants.ERIC_CLST_API_BASE_URL).build();
-
-    OutlinesApi outlinesApi = restAdapter.create(OutlinesApi.class);
-
-    outlinesApi.getOutlinesModel(outlinesModelCallback);
-  }
-
-
-
-  private void createOutsideClickDialogFragment(String message, String tag) {
-    OutsideClickDialogFragment dialog = new OutsideClickDialogFragment();
-    Bundle arguments = new Bundle();
-    arguments.putCharSequence("message", message);
-    dialog.setArguments(arguments);
-    dialog.show(mainActivity.getFragmentManager(), tag);
-  }
-
-  private void resetStates() {
-    mainActivity.getSelectedStateFragment().setFeature(null);
-    mainActivity.getLocationName().setText(R.string.state_name_goes_here);
-    clickedStateName = null;
   }
 }

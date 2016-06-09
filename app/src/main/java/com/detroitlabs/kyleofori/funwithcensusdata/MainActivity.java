@@ -164,25 +164,6 @@ public class MainActivity extends AppCompatActivity
       locationDescription.setText(R.string.state_information);
     }
   }
-  //******************Methods for Callback<OutlinesModel>*****************//
-
-  @Override public void success(OutlinesModel outlinesModel, Response response) {
-    ArrayList<OutlinesModel.Feature> features = outlinesModel.getFeatures();
-    OutlinesModel.Feature selectedState;
-    if(statesHashMap == null) {
-      statesHashMap = createHashMap(features);
-    }
-    for (OutlinesModel.Feature feature : features) { //TODO: don't assign state to feature in each iteration
-      if (feature.getProperties().getPoliticalUnitName().equals(outlineCallMaker.clickedStateName)) {
-        selectedState = feature;
-        selectedStateFragment.setFeature(selectedState);
-        highlightState(selectedState);
-        locationName.setText(selectedState.getProperties().getPoliticalUnitName());
-        makeHttpCallForAcsData(selectedState.getProperties().getPoliticalUnitName());
-      }
-    }
-
-  }
 
   private HashMap<String, String> createHashMap(ArrayList<OutlinesModel.Feature> features) {
     HashMap<String, String> hashMap = new HashMap<>();
@@ -220,10 +201,6 @@ public class MainActivity extends AppCompatActivity
     }
   }
 
-  @Override public void failure(RetrofitError error) {
-    error.printStackTrace();
-  }
-
   private void addEachPolygonToMap(List<List<List<Double>>> polygonOutline) {
     List<LatLng> polygon = makePolygonOfCoordinatePairs(polygonOutline);
     polygonCollection.add(polygon);
@@ -256,5 +233,28 @@ public class MainActivity extends AppCompatActivity
   @Override public void onAccessedSurveyData(String data) {
    locationDescription.setText(data);
     selectedStateFragment.setInformation(data);
+  }
+
+  //******************Methods for Callback<OutlinesModel>*****************//
+
+  @Override public void success(OutlinesModel outlinesModel, Response response) {
+    ArrayList<OutlinesModel.Feature> features = outlinesModel.getFeatures();
+    OutlinesModel.Feature selectedState;
+    if(statesHashMap == null) {
+      statesHashMap = createHashMap(features);
+    }
+    for (OutlinesModel.Feature feature : features) { //TODO: don't assign state to feature in each iteration
+      if (feature.getProperties().getPoliticalUnitName().equals(outlineCallMaker.clickedStateName)) {
+        selectedState = feature;
+        selectedStateFragment.setFeature(selectedState);
+        highlightState(selectedState);
+        locationName.setText(selectedState.getProperties().getPoliticalUnitName());
+        makeHttpCallForAcsData(selectedState.getProperties().getPoliticalUnitName());
+      }
+    }
+  }
+
+  @Override public void failure(RetrofitError error) {
+    error.printStackTrace();
   }
 }
