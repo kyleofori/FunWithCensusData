@@ -19,10 +19,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
 import java.util.ArrayList;
 import java.util.List;
-import retrofit.Callback;
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 public class MainActivity extends AppCompatActivity
     implements View.OnClickListener, GoogleMap.OnMapClickListener, Callback<OutlinesModel>,
@@ -80,10 +80,10 @@ public class MainActivity extends AppCompatActivity
   }
 
   protected void makeHttpCallForStateNames(LatLng latLng) {
-    RestAdapter restAdapter =
-        new RestAdapter.Builder().setEndpoint(Constants.GOOGLE_MAPS_API_BASE_URL).build();
+    Retrofit retrofit =
+        new Retrofit.Builder().baseUrl(Constants.GOOGLE_MAPS_API_BASE_URL).build();
 
-    StatesApi statesApi = restAdapter.create(StatesApi.class);
+    StatesApi statesApi = retrofit.create(StatesApi.class);
 
     String latLngString = latLng.latitude + "," + latLng.longitude;
 
@@ -147,19 +147,6 @@ public class MainActivity extends AppCompatActivity
   }
   //******************Methods for Callback<OutlinesModel>*****************//
 
-  @Override public void success(OutlinesModel outlinesModel, Response response) {
-    ArrayList<OutlinesModel.Feature> features = outlinesModel.getFeatures();
-    OutlinesModel.Feature selectedState = null;
-    for (OutlinesModel.Feature feature : features) { //TODO: don't assign state to feature in each iteration
-      if (feature.getProperties().getPoliticalUnitName().equals(outlineCallMaker.clickedStateName)) {
-        selectedState = feature;
-        selectedStateFragment.setData(selectedState);
-        highlightState(selectedState);
-        locationName.setText(selectedState.getProperties().getPoliticalUnitName());
-      }
-    }
-  }
-
   private void highlightState(OutlinesModel.Feature state) {
     OutlinesModel.Feature.Geometry geometry = state.getGeometry();
     Object coordinates = geometry.getCoordinates();
@@ -174,10 +161,6 @@ public class MainActivity extends AppCompatActivity
         addEachPolygonToMap(polygonOutline);
       }
     }
-  }
-
-  @Override public void failure(RetrofitError error) {
-    error.printStackTrace();
   }
 
   private void addEachPolygonToMap(List<List<List<Double>>> polygonOutline) {
@@ -207,5 +190,24 @@ public class MainActivity extends AppCompatActivity
 
   @Override public void clearMap() {
     map.clear();
+  }
+
+  @Override public void onResponse(Call<OutlinesModel> call, Response<OutlinesModel> response) {
+    OutlinesModel outlinesModel = response.body();
+    ArrayList<OutlinesModel.Feature> features = outlinesModel.getFeatures();
+    OutlinesModel.Feature selectedState = null;
+    for (OutlinesModel.Feature feature : features) { //TODO: don't assign state to feature in each iteration
+      if (feature.getProperties().getPoliticalUnitName().equals(outlineCallMaker.clickedStateName)) {
+        selectedState = feature;
+        selectedStateFragment.setData(selectedState);
+        highlightState(selectedState);
+        locationName.setText(selectedState.getProperties().getPoliticalUnitName());
+      }
+    }
+
+  }
+
+  @Override public void onFailure(Call<OutlinesModel> call, Throwable t) {
+    t.printStackTrace();
   }
 }

@@ -2,19 +2,16 @@ package com.detroitlabs.kyleofori.funwithcensusdata;
 
 import android.content.Context;
 import android.os.Bundle;
-
 import com.detroitlabs.kyleofori.funwithcensusdata.api.OutlinesApi;
 import com.detroitlabs.kyleofori.funwithcensusdata.dialogs.OutsideClickDialogFragment;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.StatesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
-
 import java.util.ArrayList;
-
-import retrofit.Callback;
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 public class OutlineCallMaker implements Callback<StatesModel> {
 
@@ -29,7 +26,31 @@ public class OutlineCallMaker implements Callback<StatesModel> {
     mainActivity = (MainActivity) context;
   }
 
-  @Override public void success(StatesModel statesModel, Response response) {
+  protected void makeHttpCallForStateOutlines() {
+    Retrofit retrofit =
+        new Retrofit.Builder().baseUrl(Constants.ERIC_CLST_API_BASE_URL).build();
+
+    OutlinesApi outlinesApi = retrofit.create(OutlinesApi.class);
+
+    outlinesApi.getOutlinesModel(callback);
+  }
+
+  private void createOutsideClickDialogFragment(String message, String tag) {
+    OutsideClickDialogFragment dialog = new OutsideClickDialogFragment();
+    Bundle arguments = new Bundle();
+    arguments.putCharSequence("message", message);
+    dialog.setArguments(arguments);
+    dialog.show(mainActivity.getFragmentManager(), tag);
+  }
+
+  private void resetStates() {
+    mainActivity.getSelectedStateFragment().setData(null);
+    mainActivity.getLocationName().setText(R.string.state_name_goes_here);
+    clickedStateName = null;
+  }
+
+  @Override public void onResponse(Call<StatesModel> call, Response<StatesModel> response) {
+    StatesModel statesModel = response.body();
     ArrayList<StatesModel.GoogleResult> results = statesModel.getResults();
     if (results.isEmpty()) {
       createOutsideClickDialogFragment(mainActivity.getString(R.string.body_of_water_message),
@@ -60,32 +81,10 @@ public class OutlineCallMaker implements Callback<StatesModel> {
         }
       }
     }
+
   }
 
-  @Override public void failure(RetrofitError error) {
-    error.printStackTrace();
-  }
-
-  protected void makeHttpCallForStateOutlines() {
-    RestAdapter restAdapter =
-        new RestAdapter.Builder().setEndpoint(Constants.ERIC_CLST_API_BASE_URL).build();
-
-    OutlinesApi outlinesApi = restAdapter.create(OutlinesApi.class);
-
-    outlinesApi.getOutlinesModel(callback);
-  }
-
-  private void createOutsideClickDialogFragment(String message, String tag) {
-    OutsideClickDialogFragment dialog = new OutsideClickDialogFragment();
-    Bundle arguments = new Bundle();
-    arguments.putCharSequence("message", message);
-    dialog.setArguments(arguments);
-    dialog.show(mainActivity.getFragmentManager(), tag);
-  }
-
-  private void resetStates() {
-    mainActivity.getSelectedStateFragment().setData(null);
-    mainActivity.getLocationName().setText(R.string.state_name_goes_here);
-    clickedStateName = null;
+  @Override public void onFailure(Call<StatesModel> call, Throwable t) {
+    t.printStackTrace();
   }
 }

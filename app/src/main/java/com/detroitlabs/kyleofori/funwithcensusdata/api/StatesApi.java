@@ -2,9 +2,9 @@ package com.detroitlabs.kyleofori.funwithcensusdata.api;
 
 import com.detroitlabs.kyleofori.funwithcensusdata.model.StatesModel;
 
-import retrofit.Callback;
-import retrofit.http.GET;
-import retrofit.http.Query;
+import retrofit2.Callback;
+import retrofit2.http.GET;
+import retrofit2.http.Query;
 
 public interface StatesApi {
 
