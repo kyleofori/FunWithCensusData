@@ -32,19 +32,19 @@ public class MainActivity extends AppCompatActivity
     implements View.OnClickListener, GoogleMap.OnMapClickListener,
     MapClearingInterface, SurveyDataResponder, StateOutlinesResponder {
 
-  public SelectedStateFragment selectedStateFragment;
 
   private static final LatLng USA_COORDINATES = new LatLng(39, -98);
   private static final int USA_ZOOM_LEVEL = 3;
 
-  private List<List<LatLng>> polygonCollection = new ArrayList<>();
+  public SelectedStateFragment selectedStateFragment;
+  public AcsSurveyModelCallback acsSurveyModelCallback;
   public int indexOfMostRecentPolygon = 0;
+
+  private List<List<LatLng>> polygonCollection = new ArrayList<>();
   private OutlineCallMaker outlineCallMaker;
   private SlidingPanel popup;
   private GoogleMap map;
   private Animation animShow, animHide;
-  public AcsSurveyModelCallback acsSurveyModelCallback;
-
   private TextView locationName;
   private TextView locationDescription;
   private ImageButton showButton;
@@ -104,7 +104,6 @@ public class MainActivity extends AppCompatActivity
 
     String latLngString = latLng.latitude + "," + latLng.longitude;
     Call<StatesModel> statesModelCall = statesApi.getStatesModel(latLngString);
-    outlineCallMaker = new OutlineCallMaker(this);
     statesModelCall.enqueue(outlineCallMaker);
   }
 
@@ -186,10 +185,7 @@ public class MainActivity extends AppCompatActivity
     AcsSurveyApi acsSurveyApi = retrofit.create(AcsSurveyApi.class);
 
     Call<ArrayList<ArrayList<String>>> call = acsSurveyApi.getAcsSurveyInformation("NAME,B01001B_007E", "state:" + statesHashMap.get(stateName));
-    acsSurveyModelCallback = new AcsSurveyModelCallback(this);
     call.enqueue(acsSurveyModelCallback);
-
-
   }
 
   private void highlightState(OutlinesModel.Feature state) {
