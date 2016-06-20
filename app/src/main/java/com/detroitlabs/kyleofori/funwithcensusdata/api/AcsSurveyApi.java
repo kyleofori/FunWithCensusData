@@ -1,11 +1,11 @@
 package com.detroitlabs.kyleofori.funwithcensusdata.api;
 
 import java.util.ArrayList;
-import retrofit.Callback;
-import retrofit.http.GET;
-import retrofit.http.Query;
+import retrofit2.Call;
+import retrofit2.http.GET;
+import retrofit2.http.Query;
 
 public interface AcsSurveyApi {
-  @GET("/")
-  void getAcsSurveyInformation(@Query("get") String nameAndVariable, @Query("for") String stateNumber, Callback<ArrayList<ArrayList<String>>> callback);
+  @GET("acs1")
+  Call<ArrayList<ArrayList<String>>> getAcsSurveyInformation(@Query("get") String nameAndVariable, @Query("for") String stateNumber);
 }

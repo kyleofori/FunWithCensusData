@@ -4,7 +4,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -15,6 +14,7 @@ import com.detroitlabs.kyleofori.funwithcensusdata.api.StatesApi;
 import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.StateOutlinesResponder;
 import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.SurveyDataResponder;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
+import com.detroitlabs.kyleofori.funwithcensusdata.model.StatesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -24,7 +24,9 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import retrofit.RestAdapter;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity
     implements View.OnClickListener, GoogleMap.OnMapClickListener,
@@ -92,14 +94,18 @@ public class MainActivity extends AppCompatActivity
   }
 
   protected void makeHttpCallForStateNames(LatLng latLng) {
-    RestAdapter restAdapter =
-        new RestAdapter.Builder().setEndpoint(Constants.GOOGLE_MAPS_API_BASE_URL).build();
+    Retrofit retrofit =
+        new Retrofit.Builder()
+            .baseUrl(Constants.GOOGLE_MAPS_API_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build();
 
-    StatesApi statesApi = restAdapter.create(StatesApi.class);
+    StatesApi statesApi = retrofit.create(StatesApi.class);
 
     String latLngString = latLng.latitude + "," + latLng.longitude;
-
-    statesApi.getStatesModel(latLngString, outlineCallMaker);
+    Call<StatesModel> statesModelCall = statesApi.getStatesModel(latLngString);
+    outlineCallMaker = new OutlineCallMaker(this);
+    statesModelCall.enqueue(outlineCallMaker);
   }
 
   @Override public void onClick(View view) {
@@ -171,13 +177,19 @@ public class MainActivity extends AppCompatActivity
   }
 
   private void makeHttpCallForAcsData(String stateName) {
-    RestAdapter restAdapter =
-        new RestAdapter.Builder().setEndpoint(Constants.ACS_2014_API_BASE_URL).build();
+    Retrofit retrofit =
+        new Retrofit.Builder()
+            .baseUrl(Constants.ACS_2014_API_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build();
 
-    AcsSurveyApi acsSurveyApi = restAdapter.create(AcsSurveyApi.class);
-    Log.i("OutlineCallMaker", "made it here");
+    AcsSurveyApi acsSurveyApi = retrofit.create(AcsSurveyApi.class);
 
-    acsSurveyApi.getAcsSurveyInformation("NAME,B01001B_007E", "state:" + statesHashMap.get(stateName), acsSurveyModelCallback);
+    Call<ArrayList<ArrayList<String>>> call = acsSurveyApi.getAcsSurveyInformation("NAME,B01001B_007E", "state:" + statesHashMap.get(stateName));
+    acsSurveyModelCallback = new AcsSurveyModelCallback(this);
+    call.enqueue(acsSurveyModelCallback);
+
+
   }
 
   private void highlightState(OutlinesModel.Feature state) {

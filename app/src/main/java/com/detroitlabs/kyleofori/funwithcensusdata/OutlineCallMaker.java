@@ -2,6 +2,7 @@ package com.detroitlabs.kyleofori.funwithcensusdata;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import com.detroitlabs.kyleofori.funwithcensusdata.dialogs.OutsideClickDialogFragment;
 import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.StateOutlinesResponder;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
@@ -11,9 +12,9 @@ import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class OutlineCallMaker implements Callback<StatesModel> {
 
@@ -73,40 +74,45 @@ public class OutlineCallMaker implements Callback<StatesModel> {
 
   //******************Methods for Callback<StatesModel>*****************//
 
-  @Override public void success(StatesModel statesModel, Response response) {
-    ArrayList<StatesModel.GoogleResult> results = statesModel.getResults();
-    if (results.isEmpty()) {
-      createOutsideClickDialogFragment(mainActivity.getString(R.string.body_of_water_message),
-          "water");
-    } else if (!statesModel.isInUSA()) {
-      createOutsideClickDialogFragment(mainActivity.getString(R.string.other_land_message), "land");
+  @Override public void onResponse(Call<StatesModel> call, Response<StatesModel> response) {
+    if(response.body() == null) {
+      Log.i("Hey-o", "response is null!!");
     } else {
-      ArrayList<StatesModel.GoogleResult.AddressComponent> addressComponents =
-          results.get(0).getAddressComponents();
-      for (StatesModel.GoogleResult.AddressComponent component : addressComponents) {
-        ArrayList<String> types = component.getTypes();
-        String firstType = types.get(0);
-        if (firstType.equals(Constants.AA_LEVEL_1)) {
-          clickedStateName = component.getLongName();
-          if (mainActivity.getSelectedStateFragment().getFeature() == null) {
-            retrieveStateOutlines();
-          } else {
-            mapClearingInterface.clearMap();
-            if (clickedStateName.equals(mainActivity.getSelectedStateFragment()
-                .getFeature()
-                .getProperties()
-                .getPoliticalUnitName())) {
-              resetStates();
-            } else {
+      StatesModel statesModel = response.body();
+      ArrayList<StatesModel.GoogleResult> results = statesModel.getResults();
+      if (results.isEmpty()) {
+        createOutsideClickDialogFragment(mainActivity.getString(R.string.body_of_water_message),
+            "water");
+      } else if (!statesModel.isInUSA()) {
+        createOutsideClickDialogFragment(mainActivity.getString(R.string.other_land_message), "land");
+      } else {
+        ArrayList<StatesModel.GoogleResult.AddressComponent> addressComponents = results.get(0).getAddressComponents();
+        for (StatesModel.GoogleResult.AddressComponent component : addressComponents) {
+          ArrayList<String> types = component.getTypes();
+          String firstType = types.get(0);
+          if (firstType.equals(Constants.AA_LEVEL_1)) {
+            clickedStateName = component.getLongName();
+            if (mainActivity.getSelectedStateFragment().getFeature() == null) {
               retrieveStateOutlines();
+            } else {
+              mapClearingInterface.clearMap();
+              if (clickedStateName.equals(mainActivity.getSelectedStateFragment()
+                  .getFeature()
+                  .getProperties()
+                  .getPoliticalUnitName())) {
+                resetStates();
+              } else {
+                retrieveStateOutlines();
+              }
             }
           }
         }
       }
     }
+
   }
 
-  @Override public void failure(RetrofitError error) {
-    error.printStackTrace();
+  @Override public void onFailure(Call<StatesModel> call, Throwable t) {
+    t.printStackTrace();
   }
 }
