@@ -2,6 +2,7 @@ package com.detroitlabs.kyleofori.funwithcensusdata;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity
   private ImageButton showButton;
   private ImageButton hideButton;
   private HashMap<String, String> statesHashMap;
+  private BottomSheetBehavior bottomSheetBehavior;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -63,6 +65,9 @@ public class MainActivity extends AppCompatActivity
     setUpMapIfNeeded();
     initPopup();
     initSelectedStateFragment();
+    View bottomSheet = findViewById(R.id.bottom_sheet);
+
+    bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
   }
 
   private void initSelectedStateFragment() {
@@ -105,6 +110,8 @@ public class MainActivity extends AppCompatActivity
     String latLngString = latLng.latitude + "," + latLng.longitude;
     Call<StatesModel> statesModelCall = statesApi.getStatesModel(latLngString);
     statesModelCall.enqueue(outlineCallMaker);
+
+    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
   }
 
   @Override public void onClick(View view) {
