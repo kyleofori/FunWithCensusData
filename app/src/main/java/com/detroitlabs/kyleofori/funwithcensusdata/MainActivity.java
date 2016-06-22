@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity
   private ImageButton hideButton;
   private HashMap<String, String> statesHashMap;
   private BottomSheetBehavior bottomSheetBehavior;
+  private boolean isExpanded;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -96,6 +97,12 @@ public class MainActivity extends AppCompatActivity
 
   @Override public void onMapClick(LatLng latLng) {
     makeHttpCallForStateNames(latLng);
+    if(isExpanded) {
+      bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+    } else {
+      bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+    }
+    isExpanded = !isExpanded;
   }
 
   protected void makeHttpCallForStateNames(LatLng latLng) {

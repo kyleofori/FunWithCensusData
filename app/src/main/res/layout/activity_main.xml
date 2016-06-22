@@ -97,6 +97,7 @@
         android:layout_height="350dp"
         android:clipToPadding="true"
         android:background="@android:color/holo_orange_light"
+        app:behavior_peekHeight="35dp"
         app:layout_behavior="android.support.design.widget.BottomSheetBehavior"
         >
       <TextView
