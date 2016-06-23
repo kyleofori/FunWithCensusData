@@ -6,9 +6,6 @@ import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import com.detroitlabs.kyleofori.funwithcensusdata.api.AcsSurveyApi;
 import com.detroitlabs.kyleofori.funwithcensusdata.api.StatesApi;
@@ -30,7 +27,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity
-    implements View.OnClickListener, GoogleMap.OnMapClickListener,
+    implements GoogleMap.OnMapClickListener,
     MapClearingInterface, SurveyDataResponder, StateOutlinesResponder {
 
 
@@ -43,13 +40,9 @@ public class MainActivity extends AppCompatActivity
 
   private List<List<LatLng>> polygonCollection = new ArrayList<>();
   private OutlineCallMaker outlineCallMaker;
-  private SlidingPanel popup;
   private GoogleMap map;
-  private Animation animShow, animHide;
   private TextView locationName;
   private TextView locationDescription;
-  private ImageButton showButton;
-  private ImageButton hideButton;
   private HashMap<String, String> statesHashMap;
   private BottomSheetBehavior bottomSheetBehavior;
   private boolean isExpanded;
@@ -64,7 +57,7 @@ public class MainActivity extends AppCompatActivity
     outlineCallMaker = new OutlineCallMaker(this);
     acsSurveyModelCallback = new AcsSurveyModelCallback(this);
     setUpMapIfNeeded();
-    initPopup();
+    initBottomSheetText();
     initSelectedStateFragment();
     View bottomSheet = findViewById(R.id.bottom_sheet);
 
@@ -113,23 +106,6 @@ public class MainActivity extends AppCompatActivity
     statesModelCall.enqueue(outlineCallMaker);
   }
 
-  @Override public void onClick(View view) {
-    switch (view.getId()) {
-      case R.id.show_popup_button:
-        popup.setVisibility(View.VISIBLE);
-        popup.startAnimation(animShow);
-        showButton.setEnabled(false);
-        hideButton.setEnabled(true);
-        break;
-      case R.id.hide_popup_button:
-        popup.startAnimation(animHide);
-        showButton.setEnabled(true);
-        hideButton.setEnabled(false);
-        popup.setVisibility(View.GONE);
-        break;
-    }
-  }
-
   public TextView getLocationName() {
     return locationName;
   }
@@ -151,18 +127,7 @@ public class MainActivity extends AppCompatActivity
     map.moveCamera(CameraUpdateFactory.newLatLngZoom(USA_COORDINATES, USA_ZOOM_LEVEL));
   }
 
-  private void initPopup() {
-    popup = (SlidingPanel) findViewById(R.id.popup_window);
-    popup.setVisibility(View.GONE);
-
-    showButton = (ImageButton) findViewById(R.id.show_popup_button);
-    showButton.setOnClickListener(this);
-    hideButton = (ImageButton) findViewById(R.id.hide_popup_button);
-    hideButton.setOnClickListener(this);
-
-    animShow = AnimationUtils.loadAnimation(this, R.anim.popup_show);
-    animHide = AnimationUtils.loadAnimation(this, R.anim.popup_hide);
-
+  private void initBottomSheetText() {
     locationName = (TextView) findViewById(R.id.site_name);
     locationDescription = (TextView) findViewById(R.id.site_description);
 
