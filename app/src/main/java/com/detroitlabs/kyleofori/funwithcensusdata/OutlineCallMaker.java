@@ -2,7 +2,6 @@ package com.detroitlabs.kyleofori.funwithcensusdata;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import com.detroitlabs.kyleofori.funwithcensusdata.dialogs.OutsideClickDialogFragment;
 import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.StateOutlinesResponder;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
@@ -76,7 +75,6 @@ public class OutlineCallMaker implements Callback<StatesModel> {
 
   @Override public void onResponse(Call<StatesModel> call, Response<StatesModel> response) {
     if(response.body() == null) {
-      Log.i("Hey-o", "response is null!!");
     } else {
       StatesModel statesModel = response.body();
       ArrayList<StatesModel.GoogleResult> results = statesModel.getResults();

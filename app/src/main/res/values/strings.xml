@@ -15,5 +15,6 @@
     <string name="body_of_water_message">This is a body of water, not one of the fifty United States.
     </string>
     <string name="other_land_message">This land is not in one of the fifty United States.</string>
+    <string name="click_a_state_to_begin">Click a state to begin</string>
 
 </resources>

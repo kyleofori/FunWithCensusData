@@ -97,12 +97,6 @@ public class MainActivity extends AppCompatActivity
 
   @Override public void onMapClick(LatLng latLng) {
     makeHttpCallForStateNames(latLng);
-    if(isExpanded) {
-      bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-    } else {
-      bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-    }
-    isExpanded = !isExpanded;
   }
 
   protected void makeHttpCallForStateNames(LatLng latLng) {
@@ -117,8 +111,6 @@ public class MainActivity extends AppCompatActivity
     String latLngString = latLng.latitude + "," + latLng.longitude;
     Call<StatesModel> statesModelCall = statesApi.getStatesModel(latLngString);
     statesModelCall.enqueue(outlineCallMaker);
-
-    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
   }
 
   @Override public void onClick(View view) {
@@ -266,6 +258,17 @@ public class MainActivity extends AppCompatActivity
         locationName.setText(selectedState.getProperties().getPoliticalUnitName());
         makeHttpCallForAcsData(selectedState.getProperties().getPoliticalUnitName());
       }
+    }
+    toggleBottomSheet();
+  }
+
+  private void toggleBottomSheet() {
+    if(selectedStateFragment.getFeature() == null) {
+      bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+      isExpanded = false;
+    } else {
+      bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+      isExpanded = true;
     }
   }
 }
