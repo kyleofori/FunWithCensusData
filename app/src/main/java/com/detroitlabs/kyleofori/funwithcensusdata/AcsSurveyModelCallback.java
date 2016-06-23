@@ -1,7 +1,6 @@
 package com.detroitlabs.kyleofori.funwithcensusdata;
 
 import android.content.Context;
-import android.util.Log;
 import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.SurveyDataResponder;
 import java.util.ArrayList;
 import retrofit2.Call;
@@ -25,7 +24,6 @@ public class AcsSurveyModelCallback implements Callback<ArrayList<ArrayList<Stri
     ArrayList<ArrayList<String>> acsSurveyModelList = response.body();
     variable = "Number of 18- and 19-year-old black men: " + acsSurveyModelList.get(1).get(1);
     surveyDataResponder.onAccessedSurveyData(variable);
-
   }
 
   @Override public void onFailure(Call<ArrayList<ArrayList<String>>> call, Throwable t) {

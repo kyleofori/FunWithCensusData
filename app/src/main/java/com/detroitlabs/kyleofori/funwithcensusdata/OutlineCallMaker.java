@@ -31,12 +31,11 @@ public class OutlineCallMaker implements Callback<StatesModel> {
   }
 
   protected void retrieveStateOutlines() {
-    if(gson == null && model == null) {
+    if (gson == null && model == null) {
       gson = new Gson();
       model = gson.fromJson(loadJsonStringFromAsset(), OutlinesModel.class);
     }
     stateOutlinesResponder.onStateOutlinesReceived(model);
-
   }
 
   private String loadJsonStringFromAsset() {
@@ -55,8 +54,6 @@ public class OutlineCallMaker implements Callback<StatesModel> {
     return json;
   }
 
-
-
   private void createOutsideClickDialogFragment(String message, String tag) {
     OutsideClickDialogFragment dialog = new OutsideClickDialogFragment();
     Bundle arguments = new Bundle();
@@ -74,7 +71,7 @@ public class OutlineCallMaker implements Callback<StatesModel> {
   //******************Methods for Callback<StatesModel>*****************//
 
   @Override public void onResponse(Call<StatesModel> call, Response<StatesModel> response) {
-    if(response.body() == null) {
+    if (response.body() == null) {
     } else {
       StatesModel statesModel = response.body();
       ArrayList<StatesModel.GoogleResult> results = statesModel.getResults();
@@ -82,9 +79,11 @@ public class OutlineCallMaker implements Callback<StatesModel> {
         createOutsideClickDialogFragment(mainActivity.getString(R.string.body_of_water_message),
             "water");
       } else if (!statesModel.isInUSA()) {
-        createOutsideClickDialogFragment(mainActivity.getString(R.string.other_land_message), "land");
+        createOutsideClickDialogFragment(mainActivity.getString(R.string.other_land_message),
+            "land");
       } else {
-        ArrayList<StatesModel.GoogleResult.AddressComponent> addressComponents = results.get(0).getAddressComponents();
+        ArrayList<StatesModel.GoogleResult.AddressComponent> addressComponents =
+            results.get(0).getAddressComponents();
         for (StatesModel.GoogleResult.AddressComponent component : addressComponents) {
           ArrayList<String> types = component.getTypes();
           String firstType = types.get(0);
@@ -107,7 +106,6 @@ public class OutlineCallMaker implements Callback<StatesModel> {
         }
       }
     }
-
   }
 
   @Override public void onFailure(Call<StatesModel> call, Throwable t) {

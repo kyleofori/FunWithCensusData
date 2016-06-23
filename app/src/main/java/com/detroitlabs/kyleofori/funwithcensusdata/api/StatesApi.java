@@ -7,6 +7,5 @@ import retrofit2.http.Query;
 
 public interface StatesApi {
 
-    @GET("geocode/json")
-    Call<StatesModel> getStatesModel(@Query("latlng") String latLngString);
+  @GET("geocode/json") Call<StatesModel> getStatesModel(@Query("latlng") String latLngString);
 }

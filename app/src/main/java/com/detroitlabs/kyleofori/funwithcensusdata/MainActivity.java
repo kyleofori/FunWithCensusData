@@ -27,9 +27,8 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity
-    implements GoogleMap.OnMapClickListener,
-    MapClearingInterface, SurveyDataResponder, StateOutlinesResponder {
-
+    implements GoogleMap.OnMapClickListener, MapClearingInterface, SurveyDataResponder,
+    StateOutlinesResponder {
 
   private static final LatLng USA_COORDINATES = new LatLng(39, -98);
   private static final int USA_ZOOM_LEVEL = 3;
@@ -45,7 +44,6 @@ public class MainActivity extends AppCompatActivity
   private TextView locationDescription;
   private HashMap<String, String> statesHashMap;
   private BottomSheetBehavior bottomSheetBehavior;
-  private boolean isExpanded;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -75,7 +73,8 @@ public class MainActivity extends AppCompatActivity
 
     if (selectedStateFragment.getFeature() != null) {
       highlightState(selectedStateFragment.getFeature());
-      locationName.setText(selectedStateFragment.getFeature().getProperties().getPoliticalUnitName());
+      locationName.setText(
+          selectedStateFragment.getFeature().getProperties().getPoliticalUnitName());
     }
     if (selectedStateFragment.getInformation() != null) {
       locationDescription.setText(selectedStateFragment.getInformation());
@@ -93,11 +92,9 @@ public class MainActivity extends AppCompatActivity
   }
 
   protected void makeHttpCallForStateNames(LatLng latLng) {
-    Retrofit retrofit =
-        new Retrofit.Builder()
-            .baseUrl(Constants.GOOGLE_MAPS_API_BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build();
+    Retrofit retrofit = new Retrofit.Builder().baseUrl(Constants.GOOGLE_MAPS_API_BASE_URL)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build();
 
     StatesApi statesApi = retrofit.create(StatesApi.class);
 
@@ -141,21 +138,22 @@ public class MainActivity extends AppCompatActivity
   private HashMap<String, String> createHashMap(ArrayList<OutlinesModel.Feature> features) {
     HashMap<String, String> hashMap = new HashMap<>();
     for (OutlinesModel.Feature feature : features) {
-      hashMap.put(feature.getProperties().getPoliticalUnitName(), feature.getProperties().getStateNumber());
+      hashMap.put(feature.getProperties().getPoliticalUnitName(),
+          feature.getProperties().getStateNumber());
     }
     return hashMap;
   }
 
   private void makeHttpCallForAcsData(String stateName) {
-    Retrofit retrofit =
-        new Retrofit.Builder()
-            .baseUrl(Constants.ACS_2014_API_BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build();
+    Retrofit retrofit = new Retrofit.Builder().baseUrl(Constants.ACS_2014_API_BASE_URL)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build();
 
     AcsSurveyApi acsSurveyApi = retrofit.create(AcsSurveyApi.class);
 
-    Call<ArrayList<ArrayList<String>>> call = acsSurveyApi.getAcsSurveyInformation("NAME,B01001B_007E", "state:" + statesHashMap.get(stateName));
+    Call<ArrayList<ArrayList<String>>> call =
+        acsSurveyApi.getAcsSurveyInformation("NAME,B01001B_007E",
+            "state:" + statesHashMap.get(stateName));
     call.enqueue(acsSurveyModelCallback);
   }
 
@@ -216,7 +214,9 @@ public class MainActivity extends AppCompatActivity
       statesHashMap = createHashMap(features);
     }
     for (OutlinesModel.Feature feature : features) {
-      if (feature.getProperties().getPoliticalUnitName().equals(outlineCallMaker.clickedStateName)) {
+      if (feature.getProperties()
+          .getPoliticalUnitName()
+          .equals(outlineCallMaker.clickedStateName)) {
         selectedState = feature;
         selectedStateFragment.setFeature(selectedState);
         highlightState(selectedState);
@@ -228,12 +228,10 @@ public class MainActivity extends AppCompatActivity
   }
 
   private void toggleBottomSheet() {
-    if(selectedStateFragment.getFeature() == null) {
+    if (selectedStateFragment.getFeature() == null) {
       bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-      isExpanded = false;
     } else {
       bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-      isExpanded = true;
     }
   }
 }

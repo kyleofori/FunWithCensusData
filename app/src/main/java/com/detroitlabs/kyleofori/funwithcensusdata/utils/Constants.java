@@ -2,18 +2,20 @@ package com.detroitlabs.kyleofori.funwithcensusdata.utils;
 
 public class Constants {
 
-    private Constants() {}
-//    API
-    public static final String ERIC_CLST_API_BASE_URL = "http://eric.clst.org";
-    public static final String GOOGLE_MAPS_API_BASE_URL = "http://maps.googleapis.com/maps/api/";
-    public static final String ACS_2014_API_BASE_URL = "http://api.census.gov/data/2014/";
+  private Constants() {
+  }
 
-//    other needed strings
-    public static final String AA_LEVEL_1 = "administrative_area_level_1";
-    public static final String POLYGON = "Polygon";
-    public static final String MULTIPOLYGON = "MultiPolygon";
+  //    API
+  public static final String ERIC_CLST_API_BASE_URL = "http://eric.clst.org";
+  public static final String GOOGLE_MAPS_API_BASE_URL = "http://maps.googleapis.com/maps/api/";
+  public static final String ACS_2014_API_BASE_URL = "http://api.census.gov/data/2014/";
 
-//    states
+  //    other needed strings
+  public static final String AA_LEVEL_1 = "administrative_area_level_1";
+  public static final String POLYGON = "Polygon";
+  public static final String MULTIPOLYGON = "MultiPolygon";
+
+  //    states
 /*    public static final String ALABAMA = "01";
     public static final String ALASKA = "02";
     public static final String ARIZONA = "04";
@@ -65,5 +67,4 @@ public class Constants {
     public static final String WEST_VIRGINIA = "54";
     public static final String WISCONSIN = "55";
     public static final String WYOMING = "56";*/
-
 }
