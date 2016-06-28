@@ -1,10 +1,13 @@
 package com.detroitlabs.kyleofori.funwithcensusdata;
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import com.detroitlabs.kyleofori.funwithcensusdata.api.AcsSurveyApi;
@@ -14,11 +17,13 @@ import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.SurveyDataResponde
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.StatesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.security.ProviderInstaller;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,10 +33,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity
     implements GoogleMap.OnMapClickListener, MapClearingInterface, SurveyDataResponder,
-    StateOutlinesResponder {
+    StateOutlinesResponder, ProviderInstaller.ProviderInstallListener {
 
   private static final LatLng USA_COORDINATES = new LatLng(39, -98);
   private static final int USA_ZOOM_LEVEL = 3;
+  private static final int ERROR_DIALOG_REQUEST_CODE = 1;
+  private static final String NO_PROVIDER_TAG = "No provider available";
 
   public SelectedStateFragment selectedStateFragment;
   public AcsSurveyModelCallback acsSurveyModelCallback;
@@ -44,6 +51,7 @@ public class MainActivity extends AppCompatActivity
   private TextView locationDescription;
   private HashMap<String, String> statesHashMap;
   private BottomSheetBehavior bottomSheetBehavior;
+  private boolean retryProviderInstall;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -51,6 +59,7 @@ public class MainActivity extends AppCompatActivity
   }
 
   private void init() {
+    ProviderInstaller.installIfNeededAsync(this, this);
     setContentView(R.layout.activity_main);
     outlineCallMaker = new OutlineCallMaker(this);
     acsSurveyModelCallback = new AcsSurveyModelCallback(this);
@@ -233,6 +242,44 @@ public class MainActivity extends AppCompatActivity
     } else {
       bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
+  }
+
+  @Override public void onProviderInstalled() {
+
+  }
+
+  @Override public void onProviderInstallFailed(int errorCode, Intent intent) {
+    GoogleApiAvailability availability = GoogleApiAvailability.getInstance();
+    if (availability.isUserResolvableError(errorCode)) {
+      availability.showErrorDialogFragment(this, errorCode, ERROR_DIALOG_REQUEST_CODE, new DialogInterface.OnCancelListener() {
+        @Override public void onCancel(DialogInterface dialog) {
+          onProviderInstallerNotAvailable();
+        }
+      });
+    } else {
+      onProviderInstallerNotAvailable();
+    }
+  }
+
+  @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+    if (requestCode == ERROR_DIALOG_REQUEST_CODE) {
+      retryProviderInstall = true;
+    }
+  }
+
+  @Override protected void onPostResume() {
+    super.onPostResume();
+    if (retryProviderInstall) {
+      ProviderInstaller.installIfNeededAsync(this, this);
+    }
+    retryProviderInstall = false;
+  }
+
+  private void onProviderInstallerNotAvailable() {
+    //We will have to consider all HTTP communication as vulnerable.
+    Log.i(NO_PROVIDER_TAG, "All HTTP communication is vulnerable because the security provider could"
+        + "not be installed.");
   }
 }
 
