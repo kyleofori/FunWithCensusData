@@ -1,4 +1,4 @@
-package com.detroitlabs.kyleofori.funwithcensusdata.api;
+package com.detroitlabs.kyleofori.funwithcensusdata.api_interfaces;
 
 import com.detroitlabs.kyleofori.funwithcensusdata.model.StatesModel;
 import retrofit2.Call;

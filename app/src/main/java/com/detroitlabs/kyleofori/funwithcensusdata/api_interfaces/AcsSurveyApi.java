@@ -1,4 +1,4 @@
-package com.detroitlabs.kyleofori.funwithcensusdata.api;
+package com.detroitlabs.kyleofori.funwithcensusdata.api_interfaces;
 
 import java.util.ArrayList;
 import retrofit2.Call;

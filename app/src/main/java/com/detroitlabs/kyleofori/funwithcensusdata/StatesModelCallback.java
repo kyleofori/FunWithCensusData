@@ -3,6 +3,7 @@ package com.detroitlabs.kyleofori.funwithcensusdata;
 import android.content.Context;
 import android.os.Bundle;
 import com.detroitlabs.kyleofori.funwithcensusdata.dialogs.OutsideClickDialogFragment;
+import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.MapClearer;
 import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.StateOutlinesResponder;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.StatesModel;
@@ -15,17 +16,17 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class OutlineCallMaker implements Callback<StatesModel> {
+public class StatesModelCallback implements Callback<StatesModel> {
 
   public String clickedStateName;
-  private MapClearingInterface mapClearingInterface;
+  private MapClearer mapClearer;
   private MainActivity mainActivity;
   private StateOutlinesResponder stateOutlinesResponder;
   private Gson gson;
   private OutlinesModel model;
 
-  public OutlineCallMaker(Context context) {
-    mapClearingInterface = (MapClearingInterface) context;
+  public StatesModelCallback(Context context) {
+    mapClearer = (MapClearer) context;
     stateOutlinesResponder = (StateOutlinesResponder) context;
     mainActivity = (MainActivity) context;
   }
@@ -68,8 +69,6 @@ public class OutlineCallMaker implements Callback<StatesModel> {
     clickedStateName = null;
   }
 
-  //******************Methods for Callback<StatesModel>*****************//
-
   @Override public void onResponse(Call<StatesModel> call, Response<StatesModel> response) {
     if (response.body() == null) {
     } else {
@@ -92,7 +91,7 @@ public class OutlineCallMaker implements Callback<StatesModel> {
             if (mainActivity.getSelectedStateFragment().getFeature() == null) {
               retrieveStateOutlines();
             } else {
-              mapClearingInterface.clearMap();
+              mapClearer.clearMap();
               if (clickedStateName.equals(mainActivity.getSelectedStateFragment()
                   .getFeature()
                   .getProperties()

@@ -10,8 +10,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-import com.detroitlabs.kyleofori.funwithcensusdata.api.AcsSurveyApi;
-import com.detroitlabs.kyleofori.funwithcensusdata.api.StatesApi;
+import com.detroitlabs.kyleofori.funwithcensusdata.api_interfaces.AcsSurveyApi;
+import com.detroitlabs.kyleofori.funwithcensusdata.api_interfaces.StatesApi;
+import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.MapClearer;
 import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.StateOutlinesResponder;
 import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.SurveyDataResponder;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
@@ -32,7 +33,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity
-    implements GoogleMap.OnMapClickListener, MapClearingInterface, SurveyDataResponder,
+    implements GoogleMap.OnMapClickListener, MapClearer, SurveyDataResponder,
     StateOutlinesResponder, ProviderInstaller.ProviderInstallListener {
 
   private static final LatLng USA_COORDINATES = new LatLng(39, -98);
@@ -45,7 +46,7 @@ public class MainActivity extends AppCompatActivity
   public int indexOfMostRecentPolygon = 0;
 
   private List<List<LatLng>> polygonCollection = new ArrayList<>();
-  private OutlineCallMaker outlineCallMaker;
+  private StatesModelCallback statesModelCallback;
   private GoogleMap map;
   private TextView locationName;
   private TextView locationDescription;
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity
     for (OutlinesModel.Feature feature : features) {
       if (feature.getProperties()
           .getPoliticalUnitName()
-          .equals(outlineCallMaker.clickedStateName)) {
+          .equals(statesModelCallback.clickedStateName)) {
         selectedState = feature;
         selectedStateFragment.setFeature(selectedState);
         highlightState(selectedState);
@@ -146,13 +147,13 @@ public class MainActivity extends AppCompatActivity
 
     String latLngString = latLng.latitude + "," + latLng.longitude;
     Call<StatesModel> statesModelCall = statesApi.getStatesModel(latLngString);
-    statesModelCall.enqueue(outlineCallMaker);
+    statesModelCall.enqueue(statesModelCallback);
   }
 
   private void init() {
     ProviderInstaller.installIfNeededAsync(this, this);
     setContentView(R.layout.activity_main);
-    outlineCallMaker = new OutlineCallMaker(this);
+    statesModelCallback = new StatesModelCallback(this);
     acsSurveyModelCallback = new AcsSurveyModelCallback(this);
     setUpMapIfNeeded();
     initBottomSheetText();
