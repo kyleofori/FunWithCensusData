@@ -53,41 +53,59 @@ public class MainActivity extends AppCompatActivity
   private BottomSheetBehavior bottomSheetBehavior;
   private boolean retryProviderInstall;
 
+  @Override public void onMapClick(LatLng latLng) {
+    makeHttpCallForStateNames(latLng);
+  }
+
+  @Override public void clearMap() {
+    map.clear();
+  }
+
+  @Override public void onAccessedSurveyData(String data) {
+    locationDescription.setText(data);
+    selectedStateFragment.setInformation(data);
+  }
+
+  @Override public void onStateOutlinesReceived(OutlinesModel model) {
+    ArrayList<OutlinesModel.Feature> features = model.getFeatures();
+    OutlinesModel.Feature selectedState;
+    if (statesHashMap == null) {
+      statesHashMap = createHashMap(features);
+    }
+    for (OutlinesModel.Feature feature : features) {
+      if (feature.getProperties()
+          .getPoliticalUnitName()
+          .equals(outlineCallMaker.clickedStateName)) {
+        selectedState = feature;
+        selectedStateFragment.setFeature(selectedState);
+        highlightState(selectedState);
+        locationName.setText(selectedState.getProperties().getPoliticalUnitName());
+        makeHttpCallForAcsData(selectedState.getProperties().getPoliticalUnitName());
+      }
+    }
+    toggleBottomSheet();
+  }
+
+  @Override public void onProviderInstalled() {
+
+  }
+
+  @Override public void onProviderInstallFailed(int errorCode, Intent intent) {
+    GoogleApiAvailability availability = GoogleApiAvailability.getInstance();
+    if (availability.isUserResolvableError(errorCode)) {
+      availability.showErrorDialogFragment(this, errorCode, ERROR_DIALOG_REQUEST_CODE, new DialogInterface.OnCancelListener() {
+        @Override public void onCancel(DialogInterface dialog) {
+          onProviderInstallerNotAvailable();
+        }
+      });
+    } else {
+      onProviderInstallerNotAvailable();
+    }
+  }
+
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     init();
-  }
-
-  private void init() {
-    ProviderInstaller.installIfNeededAsync(this, this);
-    setContentView(R.layout.activity_main);
-    outlineCallMaker = new OutlineCallMaker(this);
-    acsSurveyModelCallback = new AcsSurveyModelCallback(this);
-    setUpMapIfNeeded();
-    initBottomSheetText();
-    initSelectedStateFragment();
-    View bottomSheet = findViewById(R.id.bottom_sheet);
-
-    bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
-  }
-
-  private void initSelectedStateFragment() {
-    FragmentManager manager = getSupportFragmentManager();
-    selectedStateFragment = (SelectedStateFragment) manager.findFragmentByTag("selected_state");
-
-    if (selectedStateFragment == null) {
-      selectedStateFragment = new SelectedStateFragment();
-      manager.beginTransaction().add(selectedStateFragment, "selected_state").commit();
-    }
-
-    if (selectedStateFragment.getFeature() != null) {
-      highlightState(selectedStateFragment.getFeature());
-      locationName.setText(
-          selectedStateFragment.getFeature().getProperties().getPoliticalUnitName());
-    }
-    if (selectedStateFragment.getInformation() != null) {
-      locationDescription.setText(selectedStateFragment.getInformation());
-    }
   }
 
   @Override protected void onResume() {
@@ -96,8 +114,27 @@ public class MainActivity extends AppCompatActivity
     map.setOnMapClickListener(this);
   }
 
-  @Override public void onMapClick(LatLng latLng) {
-    makeHttpCallForStateNames(latLng);
+  @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+    if (requestCode == ERROR_DIALOG_REQUEST_CODE) {
+      retryProviderInstall = true;
+    }
+  }
+
+  @Override protected void onPostResume() {
+    super.onPostResume();
+    if (retryProviderInstall) {
+      ProviderInstaller.installIfNeededAsync(this, this);
+    }
+    retryProviderInstall = false;
+  }
+
+  public TextView getLocationName() {
+    return locationName;
+  }
+
+  public SelectedStateFragment getSelectedStateFragment() {
+    return selectedStateFragment;
   }
 
   protected void makeHttpCallForStateNames(LatLng latLng) {
@@ -112,12 +149,16 @@ public class MainActivity extends AppCompatActivity
     statesModelCall.enqueue(outlineCallMaker);
   }
 
-  public TextView getLocationName() {
-    return locationName;
-  }
-
-  public SelectedStateFragment getSelectedStateFragment() {
-    return selectedStateFragment;
+  private void init() {
+    ProviderInstaller.installIfNeededAsync(this, this);
+    setContentView(R.layout.activity_main);
+    outlineCallMaker = new OutlineCallMaker(this);
+    acsSurveyModelCallback = new AcsSurveyModelCallback(this);
+    setUpMapIfNeeded();
+    initBottomSheetText();
+    initSelectedStateFragment();
+    View bottomSheet = findViewById(R.id.bottom_sheet);
+    bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
   }
 
   private void setUpMapIfNeeded() {
@@ -153,17 +194,23 @@ public class MainActivity extends AppCompatActivity
     return hashMap;
   }
 
-  private void makeHttpCallForAcsData(String stateName) {
-    Retrofit retrofit = new Retrofit.Builder().baseUrl(Constants.ACS_2014_API_BASE_URL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build();
+  private void initSelectedStateFragment() {
+    FragmentManager manager = getSupportFragmentManager();
+    selectedStateFragment = (SelectedStateFragment) manager.findFragmentByTag("selected_state");
 
-    AcsSurveyApi acsSurveyApi = retrofit.create(AcsSurveyApi.class);
+    if (selectedStateFragment == null) {
+      selectedStateFragment = new SelectedStateFragment();
+      manager.beginTransaction().add(selectedStateFragment, "selected_state").commit();
+    }
 
-    Call<ArrayList<ArrayList<String>>> call =
-        acsSurveyApi.getAcsSurveyInformation("NAME,B01001B_007E",
-            "state:" + statesHashMap.get(stateName));
-    call.enqueue(acsSurveyModelCallback);
+    if (selectedStateFragment.getFeature() != null) {
+      highlightState(selectedStateFragment.getFeature());
+      locationName.setText(
+          selectedStateFragment.getFeature().getProperties().getPoliticalUnitName());
+    }
+    if (selectedStateFragment.getInformation() != null) {
+      locationDescription.setText(selectedStateFragment.getInformation());
+    }
   }
 
   private void highlightState(OutlinesModel.Feature state) {
@@ -180,6 +227,19 @@ public class MainActivity extends AppCompatActivity
         addEachPolygonToMap(polygonOutline);
       }
     }
+  }
+
+  private void makeHttpCallForAcsData(String stateName) {
+    Retrofit retrofit = new Retrofit.Builder().baseUrl(Constants.ACS_2014_API_BASE_URL)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build();
+
+    AcsSurveyApi acsSurveyApi = retrofit.create(AcsSurveyApi.class);
+
+    Call<ArrayList<ArrayList<String>>> call =
+        acsSurveyApi.getAcsSurveyInformation("NAME,B01001B_007E",
+            "state:" + statesHashMap.get(stateName));
+    call.enqueue(acsSurveyModelCallback);
   }
 
   private void addEachPolygonToMap(List<List<List<Double>>> polygonOutline) {
@@ -207,73 +267,12 @@ public class MainActivity extends AppCompatActivity
     indexOfMostRecentPolygon++;
   }
 
-  @Override public void clearMap() {
-    map.clear();
-  }
-
-  @Override public void onAccessedSurveyData(String data) {
-    locationDescription.setText(data);
-    selectedStateFragment.setInformation(data);
-  }
-
-  @Override public void onStateOutlinesReceived(OutlinesModel model) {
-    ArrayList<OutlinesModel.Feature> features = model.getFeatures();
-    OutlinesModel.Feature selectedState;
-    if (statesHashMap == null) {
-      statesHashMap = createHashMap(features);
-    }
-    for (OutlinesModel.Feature feature : features) {
-      if (feature.getProperties()
-          .getPoliticalUnitName()
-          .equals(outlineCallMaker.clickedStateName)) {
-        selectedState = feature;
-        selectedStateFragment.setFeature(selectedState);
-        highlightState(selectedState);
-        locationName.setText(selectedState.getProperties().getPoliticalUnitName());
-        makeHttpCallForAcsData(selectedState.getProperties().getPoliticalUnitName());
-      }
-    }
-    toggleBottomSheet();
-  }
-
   private void toggleBottomSheet() {
     if (selectedStateFragment.getFeature() == null) {
       bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
     } else {
       bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
-  }
-
-  @Override public void onProviderInstalled() {
-
-  }
-
-  @Override public void onProviderInstallFailed(int errorCode, Intent intent) {
-    GoogleApiAvailability availability = GoogleApiAvailability.getInstance();
-    if (availability.isUserResolvableError(errorCode)) {
-      availability.showErrorDialogFragment(this, errorCode, ERROR_DIALOG_REQUEST_CODE, new DialogInterface.OnCancelListener() {
-        @Override public void onCancel(DialogInterface dialog) {
-          onProviderInstallerNotAvailable();
-        }
-      });
-    } else {
-      onProviderInstallerNotAvailable();
-    }
-  }
-
-  @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-    super.onActivityResult(requestCode, resultCode, data);
-    if (requestCode == ERROR_DIALOG_REQUEST_CODE) {
-      retryProviderInstall = true;
-    }
-  }
-
-  @Override protected void onPostResume() {
-    super.onPostResume();
-    if (retryProviderInstall) {
-      ProviderInstaller.installIfNeededAsync(this, this);
-    }
-    retryProviderInstall = false;
   }
 
   private void onProviderInstallerNotAvailable() {
