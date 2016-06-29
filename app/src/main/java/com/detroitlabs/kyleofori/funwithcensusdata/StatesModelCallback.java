@@ -4,13 +4,8 @@ import android.content.Context;
 import android.os.Bundle;
 import com.detroitlabs.kyleofori.funwithcensusdata.dialogs.OutsideClickDialogFragment;
 import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.MapClearer;
-import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.StateOutlinesResponder;
-import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.StatesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
-import com.google.gson.Gson;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -21,38 +16,10 @@ public class StatesModelCallback implements Callback<StatesModel> {
   public String clickedStateName;
   private MapClearer mapClearer;
   private MainActivity mainActivity;
-  private StateOutlinesResponder stateOutlinesResponder;
-  private Gson gson;
-  private OutlinesModel model;
 
   public StatesModelCallback(Context context) {
     mapClearer = (MapClearer) context;
-    stateOutlinesResponder = (StateOutlinesResponder) context;
     mainActivity = (MainActivity) context;
-  }
-
-  protected void retrieveStateOutlines() {
-    if (gson == null && model == null) {
-      gson = new Gson();
-      model = gson.fromJson(loadJsonStringFromAsset(), OutlinesModel.class);
-    }
-    stateOutlinesResponder.onStateOutlinesReceived(model);
-  }
-
-  private String loadJsonStringFromAsset() {
-    String json;
-    try {
-      InputStream inputStream = mainActivity.getAssets().open("ERIC-CLST-Outline.json");
-      int size = inputStream.available();
-      byte[] buffer = new byte[size];
-      inputStream.read(buffer);
-      inputStream.close();
-      json = new String(buffer, "UTF-8");
-    } catch (IOException e) {
-      e.printStackTrace();
-      return null;
-    }
-    return json;
   }
 
   private void createOutsideClickDialogFragment(String message, String tag) {
@@ -89,7 +56,7 @@ public class StatesModelCallback implements Callback<StatesModel> {
           if (firstType.equals(Constants.AA_LEVEL_1)) {
             clickedStateName = component.getLongName();
             if (mainActivity.getSelectedStateFragment().getFeature() == null) {
-              retrieveStateOutlines();
+              mainActivity.onStateClicked(clickedStateName);
             } else {
               mapClearer.clearMap();
               if (clickedStateName.equals(mainActivity.getSelectedStateFragment()
@@ -98,7 +65,7 @@ public class StatesModelCallback implements Callback<StatesModel> {
                   .getPoliticalUnitName())) {
                 resetStates();
               } else {
-                retrieveStateOutlines();
+                mainActivity.onStateClicked(clickedStateName);
               }
             }
           }

@@ -25,6 +25,9 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.security.ProviderInstaller;
+import com.google.gson.Gson;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,56 +56,8 @@ public class MainActivity extends AppCompatActivity
   private HashMap<String, String> statesHashMap;
   private BottomSheetBehavior bottomSheetBehavior;
   private boolean retryProviderInstall;
-
-  @Override public void onMapClick(LatLng latLng) {
-    makeHttpCallForStateNames(latLng);
-  }
-
-  @Override public void clearMap() {
-    map.clear();
-  }
-
-  @Override public void onAccessedSurveyData(String data) {
-    locationDescription.setText(data);
-    selectedStateFragment.setInformation(data);
-  }
-
-  @Override public void onStateOutlinesReceived(OutlinesModel model) {
-    ArrayList<OutlinesModel.Feature> features = model.getFeatures();
-    OutlinesModel.Feature selectedState;
-    if (statesHashMap == null) {
-      statesHashMap = createHashMap(features);
-    }
-    for (OutlinesModel.Feature feature : features) {
-      if (feature.getProperties()
-          .getPoliticalUnitName()
-          .equals(statesModelCallback.clickedStateName)) {
-        selectedState = feature;
-        selectedStateFragment.setFeature(selectedState);
-        highlightState(selectedState);
-        locationName.setText(selectedState.getProperties().getPoliticalUnitName());
-        makeHttpCallForAcsData(selectedState.getProperties().getPoliticalUnitName());
-      }
-    }
-    toggleBottomSheet();
-  }
-
-  @Override public void onProviderInstalled() {
-
-  }
-
-  @Override public void onProviderInstallFailed(int errorCode, Intent intent) {
-    GoogleApiAvailability availability = GoogleApiAvailability.getInstance();
-    if (availability.isUserResolvableError(errorCode)) {
-      availability.showErrorDialogFragment(this, errorCode, ERROR_DIALOG_REQUEST_CODE, new DialogInterface.OnCancelListener() {
-        @Override public void onCancel(DialogInterface dialog) {
-          onProviderInstallerNotAvailable();
-        }
-      });
-    } else {
-      onProviderInstallerNotAvailable();
-    }
-  }
+  private Gson gson;
+  private OutlinesModel model;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -130,6 +85,67 @@ public class MainActivity extends AppCompatActivity
     retryProviderInstall = false;
   }
 
+  @Override public void onMapClick(LatLng latLng) {
+    makeHttpCallForStateNames(latLng);
+  }
+
+  @Override public void clearMap() {
+    map.clear();
+  }
+
+  @Override public void onAccessedSurveyData(String data) {
+    locationDescription.setText(data);
+    selectedStateFragment.setInformation(data);
+  }
+
+  @Override public void onStateOutlinesReceived(ArrayList<OutlinesModel.Feature> features) {
+    if (statesHashMap == null) {
+      statesHashMap = createHashMap(features);
+    }
+  }
+
+  @Override public void onStateClicked(String clickedStateName) {
+    startProcessToHighlightClickedState(clickedStateName);
+    toggleBottomSheet();
+  }
+
+  private void startProcessToHighlightClickedState(String clickedStateName) {
+    OutlinesModel.Feature selectedState;
+    if (clickedStateName
+        .equals(statesModelCallback.clickedStateName)) {
+      for(OutlinesModel.Feature feature: model.getFeatures()) {
+        if(feature.getProperties().getPoliticalUnitName().equals(clickedStateName)) {
+          selectedState = feature;
+          selectedStateFragment.setFeature(selectedState);
+          highlightState(selectedState);
+          locationName.setText(selectedState.getProperties().getPoliticalUnitName());
+          makeHttpCallForAcsData(selectedState.getProperties().getPoliticalUnitName());
+        } else {
+          Log.e("Error", "The clicked state could not be found.");
+        }
+      }
+    }
+  }
+
+  @Override public void onProviderInstalled() {
+
+  }
+
+  @Override public void onProviderInstallFailed(int errorCode, Intent intent) {
+    GoogleApiAvailability availability = GoogleApiAvailability.getInstance();
+    if (availability.isUserResolvableError(errorCode)) {
+      availability.showErrorDialogFragment(this, errorCode, ERROR_DIALOG_REQUEST_CODE, new DialogInterface.OnCancelListener() {
+        @Override public void onCancel(DialogInterface dialog) {
+          onProviderInstallerNotAvailable();
+        }
+      });
+    } else {
+      onProviderInstallerNotAvailable();
+    }
+  }
+
+
+
   public TextView getLocationName() {
     return locationName;
   }
@@ -150,6 +166,31 @@ public class MainActivity extends AppCompatActivity
     statesModelCall.enqueue(statesModelCallback);
   }
 
+  protected void retrieveStateOutlines() {
+    if (gson == null && model == null) {
+      gson = new Gson();
+      model = gson.fromJson(loadJsonStringFromAsset(), OutlinesModel.class);
+    }
+    ArrayList<OutlinesModel.Feature> features = model.getFeatures();
+    onStateOutlinesReceived(features);
+  }
+
+  private String loadJsonStringFromAsset() {
+    String json;
+    try {
+      InputStream inputStream = getAssets().open("ERIC-CLST-Outline.json");
+      int size = inputStream.available();
+      byte[] buffer = new byte[size];
+      inputStream.read(buffer);
+      inputStream.close();
+      json = new String(buffer, "UTF-8");
+    } catch (IOException e) {
+      e.printStackTrace();
+      return null;
+    }
+    return json;
+  }
+
   private void init() {
     ProviderInstaller.installIfNeededAsync(this, this);
     setContentView(R.layout.activity_main);
@@ -158,6 +199,7 @@ public class MainActivity extends AppCompatActivity
     setUpMapIfNeeded();
     initBottomSheetText();
     initSelectedStateFragment();
+    retrieveStateOutlines();
     View bottomSheet = findViewById(R.id.bottom_sheet);
     bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
   }
