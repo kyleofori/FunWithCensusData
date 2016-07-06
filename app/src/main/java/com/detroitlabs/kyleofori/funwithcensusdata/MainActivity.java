@@ -2,7 +2,6 @@ package com.detroitlabs.kyleofori.funwithcensusdata;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.FragmentManager;
@@ -11,43 +10,29 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import com.detroitlabs.kyleofori.funwithcensusdata.api_interfaces.AcsSurveyApi;
-import com.detroitlabs.kyleofori.funwithcensusdata.api_interfaces.StatesApi;
-import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.MapClearer;
 import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.StateOutlinesResponder;
 import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.SurveyDataResponder;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
-import com.detroitlabs.kyleofori.funwithcensusdata.model.StatesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.security.ProviderInstaller;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity
-    implements GoogleMap.OnMapClickListener, MapClearer, SurveyDataResponder,
+    implements SurveyDataResponder,
     StateOutlinesResponder, ProviderInstaller.ProviderInstallListener {
 
-  private static final LatLng USA_COORDINATES = new LatLng(39, -98);
-  private static final int USA_ZOOM_LEVEL = 3;
   private static final int ERROR_DIALOG_REQUEST_CODE = 1;
   private static final String NO_PROVIDER_TAG = "No provider available";
 
   public SelectedStateFragment selectedStateFragment;
   public AcsSurveyModelCallback acsSurveyModelCallback;
-  public int indexOfMostRecentPolygon = 0;
 
-  private List<List<LatLng>> polygonCollection = new ArrayList<>();
-  private StatesModelCallback statesModelCallback;
-  private GoogleMap map;
+  private MapController mapController;
   private TextView locationName;
   private TextView locationDescription;
   private BottomSheetBehavior bottomSheetBehavior;
@@ -60,8 +45,7 @@ public class MainActivity extends AppCompatActivity
 
   @Override protected void onResume() {
     super.onResume();
-    setUpMapIfNeeded();
-    map.setOnMapClickListener(this);
+    mapController.setUpMapIfNeeded();
   }
 
   @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -79,14 +63,6 @@ public class MainActivity extends AppCompatActivity
     retryProviderInstall = false;
   }
 
-  @Override public void onMapClick(LatLng latLng) {
-    makeHttpCallForStateNames(latLng);
-  }
-
-  @Override public void clearMap() {
-    map.clear();
-  }
-
   @Override public void onAccessedSurveyData(String data) {
     locationDescription.setText(data);
     selectedStateFragment.setInformation(data);
@@ -102,23 +78,21 @@ public class MainActivity extends AppCompatActivity
 
   @Override public void onStateClicked(String clickedStateName) {
     if(selectedStateFragment.areFeaturesLoaded()) {
-      startProcessToHighlightClickedState(clickedStateName);
+      updateUiForClickedState(clickedStateName);
       toggleBottomSheet();
     } else {
     }
   }
 
-  private void startProcessToHighlightClickedState(String clickedStateName) {
-    OutlinesModel.Feature selectedState;
+  private void updateUiForClickedState(String clickedStateName) {
     if (clickedStateName
-        .equals(statesModelCallback.clickedStateName)) {
+        .equals(mapController.getStatesModelCallback().clickedStateName)) {
       for(OutlinesModel.Feature feature: selectedStateFragment.getAllFeatures()) {
         if(feature.getProperties().getPoliticalUnitName().equals(clickedStateName)) {
-          selectedState = feature;
-          selectedStateFragment.setFeature(selectedState);
-          highlightState(selectedState);
-          locationName.setText(selectedState.getProperties().getPoliticalUnitName());
-          makeHttpCallForAcsData(selectedState.getProperties().getPoliticalUnitName());
+          selectedStateFragment.setFeature(feature);
+          mapController.highlightState(feature);
+          locationName.setText(feature.getProperties().getPoliticalUnitName());
+          makeHttpCallForAcsData(feature.getProperties().getPoliticalUnitName());
         }
       }
     }
@@ -149,41 +123,16 @@ public class MainActivity extends AppCompatActivity
     return selectedStateFragment;
   }
 
-  protected void makeHttpCallForStateNames(LatLng latLng) {
-    Retrofit retrofit = new Retrofit.Builder().baseUrl(Constants.GOOGLE_MAPS_API_BASE_URL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build();
-
-    StatesApi statesApi = retrofit.create(StatesApi.class);
-
-    String latLngString = latLng.latitude + "," + latLng.longitude;
-    Call<StatesModel> statesModelCall = statesApi.getStatesModel(latLngString);
-    statesModelCall.enqueue(statesModelCallback);
-  }
-
   private void init() {
     ProviderInstaller.installIfNeededAsync(this, this);
     setContentView(R.layout.activity_main);
-    statesModelCallback = new StatesModelCallback(this);
     acsSurveyModelCallback = new AcsSurveyModelCallback(this);
-    setUpMapIfNeeded();
     initBottomSheetText();
+    mapController = new MapController(this);
+    mapController.init();
     initSelectedStateFragment();
     View bottomSheet = findViewById(R.id.bottom_sheet);
     bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
-  }
-
-  private void setUpMapIfNeeded() {
-    if (map == null) {
-      map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
-      if (map != null) {
-        setUpMap();
-      }
-    }
-  }
-
-  private void setUpMap() {
-    map.moveCamera(CameraUpdateFactory.newLatLngZoom(USA_COORDINATES, USA_ZOOM_LEVEL));
   }
 
   private void initBottomSheetText() {
@@ -220,28 +169,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     if (selectedStateFragment.getFeature() != null) {
-      highlightState(selectedStateFragment.getFeature());
+      mapController.highlightState(selectedStateFragment.getFeature());
       locationName.setText(
           selectedStateFragment.getFeature().getProperties().getPoliticalUnitName());
     }
     if (selectedStateFragment.getInformation() != null) {
       locationDescription.setText(selectedStateFragment.getInformation());
-    }
-  }
-
-  private void highlightState(OutlinesModel.Feature state) {
-    OutlinesModel.Feature.Geometry geometry = state.getGeometry();
-    Object coordinates = geometry.getCoordinates();
-
-    if (geometry.getType().equals(Constants.POLYGON)) {
-      List<List<List<Double>>> polygonOutline = (ArrayList<List<List<Double>>>) coordinates;
-      addEachPolygonToMap(polygonOutline);
-    } else if (geometry.getType().equals(Constants.MULTIPOLYGON)) {
-      List<List<List<List<Double>>>> multiPolygonOutline =
-          (ArrayList<List<List<List<Double>>>>) coordinates;
-      for (List<List<List<Double>>> polygonOutline : multiPolygonOutline) {
-        addEachPolygonToMap(polygonOutline);
-      }
     }
   }
 
@@ -256,31 +189,6 @@ public class MainActivity extends AppCompatActivity
         acsSurveyApi.getAcsSurveyInformation("NAME,B01001B_007E",
             "state:" + selectedStateFragment.getStatesHashMap().get(stateName));
     call.enqueue(acsSurveyModelCallback);
-  }
-
-  private void addEachPolygonToMap(List<List<List<Double>>> polygonOutline) {
-    List<LatLng> polygon = makePolygonOfCoordinatePairs(polygonOutline);
-    polygonCollection.add(polygon);
-    addMostRecentPolygonToMap();
-  }
-
-  private List<LatLng> makePolygonOfCoordinatePairs(List<List<List<Double>>> polygonOutline) {
-    List<LatLng> polygon = new ArrayList<>();
-    for (List<Double> coordinatePair : polygonOutline.get(0)) {
-      double lng = coordinatePair.get(0);
-      double lat = coordinatePair.get(1);
-      polygon.add(new LatLng(lat, lng));
-    }
-    return polygon;
-  }
-
-  private void addMostRecentPolygonToMap() {
-    map.addPolygon(new PolygonOptions().addAll(polygonCollection.get(indexOfMostRecentPolygon))
-        .strokeColor(Color.BLACK)
-        .strokeWidth(2)
-        .fillColor(Color.WHITE));
-
-    indexOfMostRecentPolygon++;
   }
 
   private void toggleBottomSheet() {

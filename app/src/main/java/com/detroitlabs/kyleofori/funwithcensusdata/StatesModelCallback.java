@@ -1,6 +1,5 @@
 package com.detroitlabs.kyleofori.funwithcensusdata;
 
-import android.content.Context;
 import android.os.Bundle;
 import com.detroitlabs.kyleofori.funwithcensusdata.dialogs.OutsideClickDialogFragment;
 import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.MapClearer;
@@ -17,9 +16,9 @@ public class StatesModelCallback implements Callback<StatesModel> {
   private MapClearer mapClearer;
   private MainActivity mainActivity;
 
-  public StatesModelCallback(Context context) {
-    mapClearer = (MapClearer) context;
-    mainActivity = (MainActivity) context;
+  public StatesModelCallback(MapClearer mapClearer, MainActivity mainActivity) {
+    this.mapClearer = mapClearer;
+    this.mainActivity = mainActivity;
   }
 
   private void createOutsideClickDialogFragment(String message, String tag) {
