@@ -50,11 +50,8 @@ public class MainActivity extends AppCompatActivity
   private GoogleMap map;
   private TextView locationName;
   private TextView locationDescription;
-  private HashMap<String, String> statesHashMap;
   private BottomSheetBehavior bottomSheetBehavior;
   private boolean retryProviderInstall;
-  private ArrayList<OutlinesModel.Feature> features;
-  private boolean areFeaturesLoaded = false;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -96,19 +93,18 @@ public class MainActivity extends AppCompatActivity
   }
 
   @Override public void onStateOutlinesReceived(ArrayList<OutlinesModel.Feature> features) {
-    if (statesHashMap == null) {
-      statesHashMap = createHashMap(features);
+    if (selectedStateFragment.getStatesHashMap() == null) {
+      selectedStateFragment.setStatesHashMap(createHashMap(features));
     }
-    this.features = features;
-    areFeaturesLoaded = true;
+    selectedStateFragment.setAllFeatures(features);
+    selectedStateFragment.setFeaturesLoaded(true);
   }
 
   @Override public void onStateClicked(String clickedStateName) {
-    if(areFeaturesLoaded) {
+    if(selectedStateFragment.areFeaturesLoaded()) {
       startProcessToHighlightClickedState(clickedStateName);
       toggleBottomSheet();
     } else {
-      Log.e("MainActivity", "features aren't done loading yet");
     }
   }
 
@@ -116,7 +112,7 @@ public class MainActivity extends AppCompatActivity
     OutlinesModel.Feature selectedState;
     if (clickedStateName
         .equals(statesModelCallback.clickedStateName)) {
-      for(OutlinesModel.Feature feature: features) {
+      for(OutlinesModel.Feature feature: selectedStateFragment.getAllFeatures()) {
         if(feature.getProperties().getPoliticalUnitName().equals(clickedStateName)) {
           selectedState = feature;
           selectedStateFragment.setFeature(selectedState);
@@ -144,8 +140,6 @@ public class MainActivity extends AppCompatActivity
       onProviderInstallerNotAvailable();
     }
   }
-
-
 
   public TextView getLocationName() {
     return locationName;
@@ -175,7 +169,6 @@ public class MainActivity extends AppCompatActivity
     setUpMapIfNeeded();
     initBottomSheetText();
     initSelectedStateFragment();
-    new GetStateOutlinesTask().execute(this);
     View bottomSheet = findViewById(R.id.bottom_sheet);
     bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
   }
@@ -222,6 +215,10 @@ public class MainActivity extends AppCompatActivity
       manager.beginTransaction().add(selectedStateFragment, "selected_state").commit();
     }
 
+    if (selectedStateFragment.getAllFeatures() == null) {
+      new GetStateOutlinesTask().execute(this);
+    }
+
     if (selectedStateFragment.getFeature() != null) {
       highlightState(selectedStateFragment.getFeature());
       locationName.setText(
@@ -257,7 +254,7 @@ public class MainActivity extends AppCompatActivity
 
     Call<ArrayList<ArrayList<String>>> call =
         acsSurveyApi.getAcsSurveyInformation("NAME,B01001B_007E",
-            "state:" + statesHashMap.get(stateName));
+            "state:" + selectedStateFragment.getStatesHashMap().get(stateName));
     call.enqueue(acsSurveyModelCallback);
   }
 
@@ -300,4 +297,3 @@ public class MainActivity extends AppCompatActivity
         + "not be installed.");
   }
 }
-

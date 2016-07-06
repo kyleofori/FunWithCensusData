@@ -2,7 +2,6 @@ package com.detroitlabs.kyleofori.funwithcensusdata;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
 import com.google.gson.Gson;
 import java.io.IOException;
@@ -18,8 +17,8 @@ public class GetStateOutlinesTask extends AsyncTask<Context, Void, Void> {
       gson = new Gson();
       model = gson.fromJson(loadJsonStringFromAsset(params[0]), OutlinesModel.class);
     }
-    ArrayList<OutlinesModel.Feature> features =  model.getFeatures();
-    ((MainActivity) params[0]).onStateOutlinesReceived(features);
+    ArrayList<OutlinesModel.Feature> allFeatures =  model.getFeatures();
+    ((MainActivity) params[0]).onStateOutlinesReceived(allFeatures);
     return null;
   }
 
@@ -39,8 +38,7 @@ public class GetStateOutlinesTask extends AsyncTask<Context, Void, Void> {
     return json;
   }
 
-  @Override protected void onPostExecute(Void aVoid) {
-    super.onPostExecute(aVoid);
-    Log.i("OK", "It's done");
+  @Override protected void onPostExecute(Void v) {
+    super.onPostExecute(v);
   }
 }
