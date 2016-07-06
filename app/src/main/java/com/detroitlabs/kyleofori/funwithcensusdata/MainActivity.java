@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity
   private BottomSheetBehavior bottomSheetBehavior;
   private boolean retryProviderInstall;
   private ArrayList<OutlinesModel.Feature> features;
+  private boolean areFeaturesLoaded = false;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -99,11 +100,16 @@ public class MainActivity extends AppCompatActivity
       statesHashMap = createHashMap(features);
     }
     this.features = features;
+    areFeaturesLoaded = true;
   }
 
   @Override public void onStateClicked(String clickedStateName) {
-    startProcessToHighlightClickedState(clickedStateName);
-    toggleBottomSheet();
+    if(areFeaturesLoaded) {
+      startProcessToHighlightClickedState(clickedStateName);
+      toggleBottomSheet();
+    } else {
+      Log.e("MainActivity", "features aren't done loading yet");
+    }
   }
 
   private void startProcessToHighlightClickedState(String clickedStateName) {
@@ -117,8 +123,6 @@ public class MainActivity extends AppCompatActivity
           highlightState(selectedState);
           locationName.setText(selectedState.getProperties().getPoliticalUnitName());
           makeHttpCallForAcsData(selectedState.getProperties().getPoliticalUnitName());
-        } else {
-          Log.e("Error", "The clicked state could not be found.");
         }
       }
     }
