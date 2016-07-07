@@ -16,5 +16,9 @@
     </string>
     <string name="other_land_message">This land is not in one of the fifty United States.</string>
     <string name="click_a_state_to_begin">Click a state to begin</string>
+    <string name="number_of_18_and_19_year_old_black_men">Number of 18- and 19-year-old black men</string>
+    <string name="welcome_text">Welcome! This app allows you to compare data about each of the fifty United States and the District of Columbia. At this point, territories are not supported. Just select the topic you wish to learn about from this screen, and you will be able to compare them on the map!</string>
+    <string name="loading_text">Loading…</string>
+    <string name="continue_to_the_map">Continue to the map!</string>
 
 </resources>
