@@ -80,7 +80,6 @@ public class MainActivity extends AppCompatActivity
     if(selectedStateFragment.areFeaturesLoaded()) {
       updateUiForClickedState(clickedStateName);
       toggleBottomSheet();
-    } else {
     }
   }
 
