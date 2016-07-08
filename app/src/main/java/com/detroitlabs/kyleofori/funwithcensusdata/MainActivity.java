@@ -1,12 +1,9 @@
 package com.detroitlabs.kyleofori.funwithcensusdata;
 
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import com.detroitlabs.kyleofori.funwithcensusdata.api_interfaces.AcsSurveyApi;
@@ -14,8 +11,6 @@ import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.StateOutlinesRespo
 import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.SurveyDataResponder;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.security.ProviderInstaller;
 import java.util.ArrayList;
 import java.util.HashMap;
 import retrofit2.Call;
@@ -23,11 +18,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity
-    implements SurveyDataResponder,
-    StateOutlinesResponder, ProviderInstaller.ProviderInstallListener {
-
-  private static final int ERROR_DIALOG_REQUEST_CODE = 1;
-  private static final String NO_PROVIDER_TAG = "No provider available";
+    implements SurveyDataResponder, StateOutlinesResponder {
 
   public SelectedStateFragment selectedStateFragment;
   public AcsSurveyModelCallback acsSurveyModelCallback;
@@ -36,7 +27,6 @@ public class MainActivity extends AppCompatActivity
   private TextView locationName;
   private TextView locationDescription;
   private BottomSheetBehavior bottomSheetBehavior;
-  private boolean retryProviderInstall;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -46,21 +36,6 @@ public class MainActivity extends AppCompatActivity
   @Override protected void onResume() {
     super.onResume();
     mapController.setUpMapIfNeeded();
-  }
-
-  @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-    super.onActivityResult(requestCode, resultCode, data);
-    if (requestCode == ERROR_DIALOG_REQUEST_CODE) {
-      retryProviderInstall = true;
-    }
-  }
-
-  @Override protected void onPostResume() {
-    super.onPostResume();
-    if (retryProviderInstall) {
-      ProviderInstaller.installIfNeededAsync(this, this);
-    }
-    retryProviderInstall = false;
   }
 
   @Override public void onAccessedSurveyData(String data) {
@@ -97,23 +72,6 @@ public class MainActivity extends AppCompatActivity
     }
   }
 
-  @Override public void onProviderInstalled() {
-
-  }
-
-  @Override public void onProviderInstallFailed(int errorCode, Intent intent) {
-    GoogleApiAvailability availability = GoogleApiAvailability.getInstance();
-    if (availability.isUserResolvableError(errorCode)) {
-      availability.showErrorDialogFragment(this, errorCode, ERROR_DIALOG_REQUEST_CODE, new DialogInterface.OnCancelListener() {
-        @Override public void onCancel(DialogInterface dialog) {
-          onProviderInstallerNotAvailable();
-        }
-      });
-    } else {
-      onProviderInstallerNotAvailable();
-    }
-  }
-
   public TextView getLocationName() {
     return locationName;
   }
@@ -123,7 +81,6 @@ public class MainActivity extends AppCompatActivity
   }
 
   private void init() {
-    ProviderInstaller.installIfNeededAsync(this, this);
     setContentView(R.layout.activity_main);
     acsSurveyModelCallback = new AcsSurveyModelCallback(this);
     initBottomSheetText();
@@ -196,11 +153,5 @@ public class MainActivity extends AppCompatActivity
     } else {
       bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
-  }
-
-  private void onProviderInstallerNotAvailable() {
-    //We will have to consider all HTTP communication as vulnerable.
-    Log.i(NO_PROVIDER_TAG, "All HTTP communication is vulnerable because the security provider could"
-        + "not be installed.");
   }
 }
