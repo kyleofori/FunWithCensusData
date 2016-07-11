@@ -1,5 +1,6 @@
 package com.detroitlabs.kyleofori.funwithcensusdata;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.FragmentManager;
@@ -27,6 +28,7 @@ public class MainActivity extends AppCompatActivity
   private TextView locationName;
   private TextView locationDescription;
   private BottomSheetBehavior bottomSheetBehavior;
+  private String variableName;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -81,6 +83,7 @@ public class MainActivity extends AppCompatActivity
   }
 
   private void init() {
+    variableName = getVariableNameFromIntent();
     setContentView(R.layout.activity_main);
     acsSurveyModelCallback = new AcsSurveyModelCallback(this);
     initBottomSheetText();
@@ -89,6 +92,12 @@ public class MainActivity extends AppCompatActivity
     initSelectedStateFragment();
     View bottomSheet = findViewById(R.id.bottom_sheet);
     bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+  }
+
+  private String getVariableNameFromIntent() {
+    Intent intent = getIntent();
+    Bundle bundle = intent.getExtras();
+    return (String) bundle.get(SplashActivity.VAR_NAME);
   }
 
   private void initBottomSheetText() {
@@ -142,7 +151,7 @@ public class MainActivity extends AppCompatActivity
     AcsSurveyApi acsSurveyApi = retrofit.create(AcsSurveyApi.class);
 
     Call<ArrayList<ArrayList<String>>> call =
-        acsSurveyApi.getAcsSurveyInformation("NAME,B01001B_007E",
+        acsSurveyApi.getAcsSurveyInformation(variableName,
             "state:" + selectedStateFragment.getStatesHashMap().get(stateName));
     call.enqueue(acsSurveyModelCallback);
   }

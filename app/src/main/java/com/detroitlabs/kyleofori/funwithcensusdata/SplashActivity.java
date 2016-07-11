@@ -17,12 +17,15 @@ public class SplashActivity extends AppCompatActivity
     implements ProviderInstaller.ProviderInstallListener, View.OnClickListener,
     RadioGroup.OnCheckedChangeListener {
 
+  public static final String VAR_NAME = "Variable name";
+
   private static final int ERROR_DIALOG_REQUEST_CODE = 1;
   private static final String NO_PROVIDER_TAG = "No provider available";
 
   private Button continueToTheMapButton;
   private TextView loadingText;
   private RadioGroup dataRadioGroup;
+  private String variableName;
 
   private boolean retryProviderInstall;
 
@@ -79,11 +82,15 @@ public class SplashActivity extends AppCompatActivity
 
   @Override public void onClick(View v) {
     Intent intent = new Intent(this, MainActivity.class);
+    intent.putExtra(VAR_NAME, variableName);
     startActivity(intent);
   }
 
   @Override public void onCheckedChanged(RadioGroup group, int checkedId) {
     continueToTheMapButton.setEnabled(true);
     continueToTheMapButton.setText(R.string.continue_to_the_map);
+    if(checkedId == R.id.eighteen_radiobutton) {
+      variableName = "NAME,B01001B_007E";
+    }
   }
 }
