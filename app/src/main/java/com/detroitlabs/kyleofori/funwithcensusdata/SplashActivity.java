@@ -6,14 +6,20 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.security.ProviderInstaller;
 
 public class SplashActivity extends AppCompatActivity
-    implements ProviderInstaller.ProviderInstallListener {
+    implements ProviderInstaller.ProviderInstallListener, View.OnClickListener {
 
   private static final int ERROR_DIALOG_REQUEST_CODE = 1;
   private static final String NO_PROVIDER_TAG = "No provider available";
+
+  private Button continueToTheMapButton;
+  private TextView loadingText;
 
   private boolean retryProviderInstall;
 
@@ -22,6 +28,9 @@ public class SplashActivity extends AppCompatActivity
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_splash);
     ProviderInstaller.installIfNeededAsync(this, this);
+    loadingText = (TextView) findViewById(R.id.loading_text);
+    continueToTheMapButton = (Button) findViewById(R.id.continue_button);
+    continueToTheMapButton.setOnClickListener(this);
   }
 
   @Override protected void onPostResume() {
@@ -40,6 +49,9 @@ public class SplashActivity extends AppCompatActivity
   }
 
   @Override public void onProviderInstalled() {
+    loadingText.setVisibility(View.GONE);
+    continueToTheMapButton.setVisibility(View.VISIBLE);
+    continueToTheMapButton.setEnabled(true);
   }
 
   @Override public void onProviderInstallFailed(int errorCode, Intent intent) {
@@ -59,5 +71,10 @@ public class SplashActivity extends AppCompatActivity
     //We will have to consider all HTTP communication as vulnerable.
     Log.i(NO_PROVIDER_TAG, "All HTTP communication is vulnerable because the security provider could"
         + "not be installed.");
+  }
+
+  @Override public void onClick(View v) {
+    Intent intent = new Intent(this, MainActivity.class);
+    startActivity(intent);
   }
 }
