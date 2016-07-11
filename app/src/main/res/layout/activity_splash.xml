@@ -40,6 +40,12 @@
         android:id="@+id/eighteen_radiobutton"
         android:text="@string/number_of_18_and_19_year_old_black_men"
         />
+    <RadioButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/median_age_radiobutton"
+        android:text="@string/median_age"
+        />
   </RadioGroup>
 
   <TextView

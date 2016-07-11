@@ -18,14 +18,15 @@ public class SplashActivity extends AppCompatActivity
     RadioGroup.OnCheckedChangeListener {
 
   public static final String VAR_NAME = "Variable name";
+  public static final String VAR_DESC = "Variable description";
 
   private static final int ERROR_DIALOG_REQUEST_CODE = 1;
   private static final String NO_PROVIDER_TAG = "No provider available";
 
   private Button continueToTheMapButton;
   private TextView loadingText;
-  private RadioGroup dataRadioGroup;
   private String variableName;
+  private String variableDescription;
 
   private boolean retryProviderInstall;
 
@@ -37,7 +38,7 @@ public class SplashActivity extends AppCompatActivity
     loadingText = (TextView) findViewById(R.id.loading_text);
     continueToTheMapButton = (Button) findViewById(R.id.continue_button);
     continueToTheMapButton.setOnClickListener(this);
-    dataRadioGroup = (RadioGroup) findViewById(R.id.data_radiogroup);
+    RadioGroup dataRadioGroup = (RadioGroup) findViewById(R.id.data_radiogroup);
     dataRadioGroup.setOnCheckedChangeListener(this);
   }
 
@@ -83,6 +84,7 @@ public class SplashActivity extends AppCompatActivity
   @Override public void onClick(View v) {
     Intent intent = new Intent(this, MainActivity.class);
     intent.putExtra(VAR_NAME, variableName);
+    intent.putExtra(VAR_DESC, variableDescription);
     startActivity(intent);
   }
 
@@ -91,6 +93,10 @@ public class SplashActivity extends AppCompatActivity
     continueToTheMapButton.setText(R.string.continue_to_the_map);
     if(checkedId == R.id.eighteen_radiobutton) {
       variableName = "NAME,B01001B_007E";
+      variableDescription = getResources().getString(R.string.number_of_18_and_19_year_old_black_men);
+    } else if (checkedId == R.id.median_age_radiobutton) {
+      variableName = "NAME,B01002_001E";
+      variableDescription = getResources().getString(R.string.median_age);
     }
   }
 }

@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity
   private TextView locationDescription;
   private BottomSheetBehavior bottomSheetBehavior;
   private String variableName;
+  private String variableDescription;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -40,9 +41,10 @@ public class MainActivity extends AppCompatActivity
     mapController.setUpMapIfNeeded();
   }
 
-  @Override public void onAccessedSurveyData(String data) {
-    locationDescription.setText(data);
-    selectedStateFragment.setInformation(data);
+  @Override public void onAccessedSurveyData(String variable) {
+    String fullDescription = variableDescription + ": " + variable;
+    locationDescription.setText(fullDescription);
+    selectedStateFragment.setInformation(variable);
   }
 
   @Override public void onStateOutlinesReceived(ArrayList<OutlinesModel.Feature> features) {
@@ -83,7 +85,7 @@ public class MainActivity extends AppCompatActivity
   }
 
   private void init() {
-    variableName = getVariableNameFromIntent();
+    populateVariableNameAndDescription();
     setContentView(R.layout.activity_main);
     acsSurveyModelCallback = new AcsSurveyModelCallback(this);
     initBottomSheetText();
@@ -94,10 +96,11 @@ public class MainActivity extends AppCompatActivity
     bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
   }
 
-  private String getVariableNameFromIntent() {
+  private void populateVariableNameAndDescription() {
     Intent intent = getIntent();
     Bundle bundle = intent.getExtras();
-    return (String) bundle.get(SplashActivity.VAR_NAME);
+    variableName = (String) bundle.get(SplashActivity.VAR_NAME);
+    variableDescription = (String) bundle.get(SplashActivity.VAR_DESC);
   }
 
   private void initBottomSheetText() {

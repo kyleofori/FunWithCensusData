@@ -6,10 +6,7 @@
     <string name="transparency">Transparency</string>
     <string name="switch_image">Switch Image</string>
     <string name="state_information">The following section will contain information about the state
-        that is highlighted. For now, only one state at a time can be highlighted, because that is
-        the only way I can currently think of to show information about states. This will change.
-        I also need to combine the done button and the learn more button so that the Learn More
-        button does not always have to be visible.</string>
+        that is highlighted.</string>
     <string name="state_name_goes_here">(Name of state goes here)</string>
     <string name="retrieving_info">Retrieving information…</string>
     <string name="body_of_water_message">This is a body of water, not one of the fifty United States.
@@ -22,5 +19,6 @@
     <string name="loading_text">Loading…</string>
     <string name="continue_to_the_map">Continue to the map!</string>
     <string name="select_topic">Select a topic</string>
+    <string name="median_age">Median age</string>
 
 </resources>
