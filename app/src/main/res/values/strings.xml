@@ -21,5 +21,6 @@
     <string name="welcome_text_pt2">Just select the topic you wish to learn about from this screen, and you will be able to compare them on the map!</string>
     <string name="loading_text">Loading…</string>
     <string name="continue_to_the_map">Continue to the map!</string>
+    <string name="select_topic">Select a topic</string>
 
 </resources>

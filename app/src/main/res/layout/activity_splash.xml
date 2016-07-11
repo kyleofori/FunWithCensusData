@@ -3,7 +3,6 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F11F77"
     >
 
   <TextView
@@ -30,26 +29,18 @@
       android:paddingRight="24dp"
       />
 
-  <RelativeLayout
-      android:layout_width="match_parent"
+  <RadioGroup
+      android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:paddingLeft="24dp"
-      android:paddingRight="24dp"
+      android:id="@+id/data_radiogroup"
       >
     <RadioButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/eighteen_radiobutton"
-        />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:text="@string/number_of_18_and_19_year_old_black_men"
-        android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/eighteen_radiobutton"
-        android:layout_toEndOf="@+id/eighteen_radiobutton"
         />
-  </RelativeLayout>
+  </RadioGroup>
 
   <TextView
       android:layout_width="wrap_content"
@@ -65,7 +56,7 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:id="@+id/continue_button"
-      android:text="@string/continue_to_the_map"
+      android:text="@string/select_topic"
       android:enabled="false"
       android:layout_gravity="center"
       android:visibility="gone"

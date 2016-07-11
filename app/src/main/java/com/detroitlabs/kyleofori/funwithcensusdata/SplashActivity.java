@@ -8,18 +8,21 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.security.ProviderInstaller;
 
 public class SplashActivity extends AppCompatActivity
-    implements ProviderInstaller.ProviderInstallListener, View.OnClickListener {
+    implements ProviderInstaller.ProviderInstallListener, View.OnClickListener,
+    RadioGroup.OnCheckedChangeListener {
 
   private static final int ERROR_DIALOG_REQUEST_CODE = 1;
   private static final String NO_PROVIDER_TAG = "No provider available";
 
   private Button continueToTheMapButton;
   private TextView loadingText;
+  private RadioGroup dataRadioGroup;
 
   private boolean retryProviderInstall;
 
@@ -31,6 +34,8 @@ public class SplashActivity extends AppCompatActivity
     loadingText = (TextView) findViewById(R.id.loading_text);
     continueToTheMapButton = (Button) findViewById(R.id.continue_button);
     continueToTheMapButton.setOnClickListener(this);
+    dataRadioGroup = (RadioGroup) findViewById(R.id.data_radiogroup);
+    dataRadioGroup.setOnCheckedChangeListener(this);
   }
 
   @Override protected void onPostResume() {
@@ -51,7 +56,6 @@ public class SplashActivity extends AppCompatActivity
   @Override public void onProviderInstalled() {
     loadingText.setVisibility(View.GONE);
     continueToTheMapButton.setVisibility(View.VISIBLE);
-    continueToTheMapButton.setEnabled(true);
   }
 
   @Override public void onProviderInstallFailed(int errorCode, Intent intent) {
@@ -76,5 +80,10 @@ public class SplashActivity extends AppCompatActivity
   @Override public void onClick(View v) {
     Intent intent = new Intent(this, MainActivity.class);
     startActivity(intent);
+  }
+
+  @Override public void onCheckedChanged(RadioGroup group, int checkedId) {
+    continueToTheMapButton.setEnabled(true);
+    continueToTheMapButton.setText(R.string.continue_to_the_map);
   }
 }
