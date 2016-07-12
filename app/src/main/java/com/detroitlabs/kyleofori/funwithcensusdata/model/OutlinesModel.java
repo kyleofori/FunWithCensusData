@@ -1,55 +1,38 @@
 package com.detroitlabs.kyleofori.funwithcensusdata.model;
 
-import com.google.gson.annotations.SerializedName;
-
+import android.os.Parcel;
+import android.os.Parcelable;
 import java.util.ArrayList;
 
-public class OutlinesModel {
+public class OutlinesModel implements Parcelable {
   private ArrayList<Feature> features;
 
   public ArrayList<Feature> getFeatures() {
     return features;
   }
 
-  public class Feature {
-    private PropertySet properties;
-
-    public PropertySet getProperties() {
-      return properties;
-    }
-
-    public class PropertySet {
-      @SerializedName("NAME") private String politicalUnitName;
-
-      @SerializedName("STATE") private String stateNumber;
-
-      public String getPoliticalUnitName() {
-        return politicalUnitName;
-      }
-
-      public String getStateNumber() {
-        return stateNumber;
-      }
-    }
-
-    private Geometry geometry;
-
-    public Geometry getGeometry() {
-      return geometry;
-    }
-
-    public class Geometry {
-      private String type;
-
-      public String getType() {
-        return type;
-      }
-
-      private Object coordinates;
-
-      public Object getCoordinates() {
-        return coordinates;
-      }
-    }
+  @Override public int describeContents() {
+    return 0;
   }
+
+  @Override public void writeToParcel(Parcel dest, int flags) {
+    dest.writeTypedList(this.features);
+  }
+
+  public OutlinesModel() {
+  }
+
+  protected OutlinesModel(Parcel in) {
+    this.features = in.createTypedArrayList(Feature.CREATOR);
+  }
+
+  public static final Creator<OutlinesModel> CREATOR = new Creator<OutlinesModel>() {
+    @Override public OutlinesModel createFromParcel(Parcel source) {
+      return new OutlinesModel(source);
+    }
+
+    @Override public OutlinesModel[] newArray(int size) {
+      return new OutlinesModel[size];
+    }
+  };
 }

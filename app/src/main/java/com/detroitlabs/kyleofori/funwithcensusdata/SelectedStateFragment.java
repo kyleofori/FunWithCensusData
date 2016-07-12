@@ -1,13 +1,13 @@
 package com.detroitlabs.kyleofori.funwithcensusdata;
 
 import android.os.Bundle;
-import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
+import com.detroitlabs.kyleofori.funwithcensusdata.model.Feature;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class SelectedStateFragment extends android.support.v4.app.Fragment {
-  private ArrayList<OutlinesModel.Feature> allFeatures;
-  private OutlinesModel.Feature feature;
+  private ArrayList<Feature> allFeatures;
+  private Feature feature;
   private String information;
   private HashMap<String, String> statesHashMap;
   private boolean featuresLoaded;
@@ -18,11 +18,11 @@ public class SelectedStateFragment extends android.support.v4.app.Fragment {
     setRetainInstance(true);
   }
 
-  public void setFeature(OutlinesModel.Feature feature) {
+  public void setFeature(Feature feature) {
     this.feature = feature;
   }
 
-  public OutlinesModel.Feature getFeature() {
+  public Feature getFeature() {
     return feature;
   }
 
@@ -35,11 +35,11 @@ public class SelectedStateFragment extends android.support.v4.app.Fragment {
   }
 
 
-  public void setAllFeatures(ArrayList<OutlinesModel.Feature> allFeatures) {
+  public void setAllFeatures(ArrayList<Feature> allFeatures) {
     this.allFeatures = allFeatures;
   }
 
-  public ArrayList<OutlinesModel.Feature> getAllFeatures() {
+  public ArrayList<Feature> getAllFeatures() {
     return allFeatures;
   }
 

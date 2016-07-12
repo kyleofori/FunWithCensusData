@@ -2,24 +2,30 @@ package com.detroitlabs.kyleofori.funwithcensusdata;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import com.detroitlabs.kyleofori.funwithcensusdata.model.Feature;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
 import com.google.gson.Gson;
+import flexjson.JSONDeserializer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-public class GetStateOutlinesTask extends AsyncTask<Context, Void, Void> {
+public class GetStateOutlinesTask extends AsyncTask<Context, Void, ArrayList<Feature>> {
   private Gson gson;
+  private JSONDeserializer deserializer;
   private OutlinesModel model;
+  private SplashActivity activity;
 
-  @Override protected Void doInBackground(Context... params) {
+  @Override protected ArrayList<Feature> doInBackground(Context... params) {
+    activity = (SplashActivity) params[0];
     if (gson == null && model == null) {
       gson = new Gson();
       model = gson.fromJson(loadJsonStringFromAsset(params[0]), OutlinesModel.class);
     }
-    ArrayList<OutlinesModel.Feature> allFeatures =  model.getFeatures();
-    ((MainActivity) params[0]).onStateOutlinesReceived(allFeatures);
-    return null;
+    //if (model == null) {
+    //  model = new JSONDeserializer<OutlinesModel>().deserialize(loadJsonStringFromAsset(params[0]));
+    //}
+    return model.getFeatures();
   }
 
   private String loadJsonStringFromAsset(Context context) {
@@ -38,7 +44,8 @@ public class GetStateOutlinesTask extends AsyncTask<Context, Void, Void> {
     return json;
   }
 
-  @Override protected void onPostExecute(Void v) {
-    super.onPostExecute(v);
+  @Override protected void onPostExecute(ArrayList<Feature> allFeatures) {
+    super.onPostExecute(allFeatures);
+    activity.onStateOutlinesReceived(allFeatures);
   }
 }

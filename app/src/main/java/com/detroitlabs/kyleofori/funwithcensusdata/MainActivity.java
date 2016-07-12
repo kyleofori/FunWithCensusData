@@ -8,9 +8,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
 import com.detroitlabs.kyleofori.funwithcensusdata.api_interfaces.AcsSurveyApi;
-import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.StateOutlinesResponder;
+import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.OnStateClickedListener;
 import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.SurveyDataResponder;
-import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
+import com.detroitlabs.kyleofori.funwithcensusdata.model.Feature;
 import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity
-    implements SurveyDataResponder, StateOutlinesResponder {
+    implements SurveyDataResponder, OnStateClickedListener {
 
   public SelectedStateFragment selectedStateFragment;
   public AcsSurveyModelCallback acsSurveyModelCallback;
@@ -47,14 +47,6 @@ public class MainActivity extends AppCompatActivity
     selectedStateFragment.setInformation(variable);
   }
 
-  @Override public void onStateOutlinesReceived(ArrayList<OutlinesModel.Feature> features) {
-    if (selectedStateFragment.getStatesHashMap() == null) {
-      selectedStateFragment.setStatesHashMap(createHashMap(features));
-    }
-    selectedStateFragment.setAllFeatures(features);
-    selectedStateFragment.setFeaturesLoaded(true);
-  }
-
   @Override public void onStateClicked(String clickedStateName) {
     if(selectedStateFragment.areFeaturesLoaded()) {
       updateUiForClickedState(clickedStateName);
@@ -65,7 +57,7 @@ public class MainActivity extends AppCompatActivity
   private void updateUiForClickedState(String clickedStateName) {
     if (clickedStateName
         .equals(mapController.getStatesModelCallback().clickedStateName)) {
-      for(OutlinesModel.Feature feature: selectedStateFragment.getAllFeatures()) {
+      for(Feature feature: selectedStateFragment.getAllFeatures()) {
         if(feature.getProperties().getPoliticalUnitName().equals(clickedStateName)) {
           selectedStateFragment.setFeature(feature);
           mapController.highlightState(feature);
@@ -85,22 +77,28 @@ public class MainActivity extends AppCompatActivity
   }
 
   private void init() {
-    populateVariableNameAndDescription();
     setContentView(R.layout.activity_main);
     acsSurveyModelCallback = new AcsSurveyModelCallback(this);
     initBottomSheetText();
     mapController = new MapController(this);
     mapController.init();
     initSelectedStateFragment();
+    unwrapIntent();
     View bottomSheet = findViewById(R.id.bottom_sheet);
     bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
   }
 
-  private void populateVariableNameAndDescription() {
+  private void unwrapIntent() {
     Intent intent = getIntent();
     Bundle bundle = intent.getExtras();
     variableName = (String) bundle.get(SplashActivity.VAR_NAME);
     variableDescription = (String) bundle.get(SplashActivity.VAR_DESC);
+
+    if (selectedStateFragment.getStatesHashMap() == null) {
+      selectedStateFragment.setStatesHashMap((HashMap<String, String>) bundle.get(SplashActivity.STATES_HASH_MAP));
+    }
+    selectedStateFragment.setAllFeatures(SplashActivity.ALL_FEATURES);
+    selectedStateFragment.setFeaturesLoaded(true);
   }
 
   private void initBottomSheetText() {
@@ -114,15 +112,6 @@ public class MainActivity extends AppCompatActivity
     }
   }
 
-  private HashMap<String, String> createHashMap(ArrayList<OutlinesModel.Feature> features) {
-    HashMap<String, String> hashMap = new HashMap<>();
-    for (OutlinesModel.Feature feature : features) {
-      hashMap.put(feature.getProperties().getPoliticalUnitName(),
-          feature.getProperties().getStateNumber());
-    }
-    return hashMap;
-  }
-
   private void initSelectedStateFragment() {
     FragmentManager manager = getSupportFragmentManager();
     selectedStateFragment = (SelectedStateFragment) manager.findFragmentByTag("selected_state");
@@ -130,10 +119,6 @@ public class MainActivity extends AppCompatActivity
     if (selectedStateFragment == null) {
       selectedStateFragment = new SelectedStateFragment();
       manager.beginTransaction().add(selectedStateFragment, "selected_state").commit();
-    }
-
-    if (selectedStateFragment.getAllFeatures() == null) {
-      new GetStateOutlinesTask().execute(this);
     }
 
     if (selectedStateFragment.getFeature() != null) {

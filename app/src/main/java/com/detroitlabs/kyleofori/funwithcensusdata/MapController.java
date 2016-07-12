@@ -3,7 +3,8 @@ package com.detroitlabs.kyleofori.funwithcensusdata;
 import android.graphics.Color;
 import com.detroitlabs.kyleofori.funwithcensusdata.api_interfaces.StatesApi;
 import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.MapClearer;
-import com.detroitlabs.kyleofori.funwithcensusdata.model.OutlinesModel;
+import com.detroitlabs.kyleofori.funwithcensusdata.model.Feature;
+import com.detroitlabs.kyleofori.funwithcensusdata.model.Geometry;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.StatesModel;
 import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -74,8 +75,8 @@ public class MapController implements GoogleMap.OnMapClickListener, MapClearer {
     statesModelCall.enqueue(statesModelCallback);
   }
 
-  public void highlightState(OutlinesModel.Feature state) {
-    OutlinesModel.Feature.Geometry geometry = state.getGeometry();
+  public void highlightState(Feature state) {
+    Geometry geometry = state.getGeometry();
     Object coordinates = geometry.getCoordinates();
 
     if (geometry.getType().equals(Constants.POLYGON)) {

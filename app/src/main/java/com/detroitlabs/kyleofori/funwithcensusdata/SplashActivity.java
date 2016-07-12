@@ -10,21 +10,28 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.StateOutlinesResponder;
+import com.detroitlabs.kyleofori.funwithcensusdata.model.Feature;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.security.ProviderInstaller;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class SplashActivity extends AppCompatActivity
     implements ProviderInstaller.ProviderInstallListener, View.OnClickListener,
-    RadioGroup.OnCheckedChangeListener {
+    RadioGroup.OnCheckedChangeListener, StateOutlinesResponder {
 
   public static final String VAR_NAME = "Variable name";
   public static final String VAR_DESC = "Variable description";
+  public static final String STATES_HASH_MAP = "States hash map";
+  public static ArrayList<Feature> ALL_FEATURES;
 
   private static final int ERROR_DIALOG_REQUEST_CODE = 1;
   private static final String NO_PROVIDER_TAG = "No provider available";
 
   private Button continueToTheMapButton;
   private TextView loadingText;
+  private HashMap<String, String> hashMap;
   private String variableName;
   private String variableDescription;
 
@@ -40,6 +47,7 @@ public class SplashActivity extends AppCompatActivity
     continueToTheMapButton.setOnClickListener(this);
     RadioGroup dataRadioGroup = (RadioGroup) findViewById(R.id.data_radiogroup);
     dataRadioGroup.setOnCheckedChangeListener(this);
+    new GetStateOutlinesTask().execute(this);
   }
 
   @Override protected void onPostResume() {
@@ -58,8 +66,7 @@ public class SplashActivity extends AppCompatActivity
   }
 
   @Override public void onProviderInstalled() {
-    loadingText.setVisibility(View.GONE);
-    continueToTheMapButton.setVisibility(View.VISIBLE);
+
   }
 
   @Override public void onProviderInstallFailed(int errorCode, Intent intent) {
@@ -85,6 +92,7 @@ public class SplashActivity extends AppCompatActivity
     Intent intent = new Intent(this, MainActivity.class);
     intent.putExtra(VAR_NAME, variableName);
     intent.putExtra(VAR_DESC, variableDescription);
+    intent.putExtra(STATES_HASH_MAP, hashMap);
     startActivity(intent);
   }
 
@@ -99,4 +107,21 @@ public class SplashActivity extends AppCompatActivity
       variableDescription = getResources().getString(R.string.median_age);
     }
   }
+
+  @Override public void onStateOutlinesReceived(ArrayList<Feature> features) {
+    hashMap = createHashMap(features);
+    ALL_FEATURES = features;
+    loadingText.setVisibility(View.GONE);
+    continueToTheMapButton.setVisibility(View.VISIBLE);
+  }
+
+  private HashMap<String, String> createHashMap(ArrayList<Feature> features) {
+    HashMap<String, String> hashMap = new HashMap<>();
+    for (Feature feature : features) {
+      hashMap.put(feature.getProperties().getPoliticalUnitName(),
+          feature.getProperties().getStateNumber());
+    }
+    return hashMap;
+  }
+
 }
