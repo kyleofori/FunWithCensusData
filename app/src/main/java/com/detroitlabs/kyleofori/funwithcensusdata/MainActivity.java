@@ -106,7 +106,8 @@ public class MainActivity extends AppCompatActivity
     locationDescription = (TextView) findViewById(R.id.site_description);
 
     if (acsSurveyModelCallback.getVariable() != null) {
-      locationDescription.setText(acsSurveyModelCallback.getVariable());
+      String fullDescription = variableDescription + ": " + acsSurveyModelCallback.getVariable();
+      locationDescription.setText(fullDescription);
     } else {
       locationDescription.setText(R.string.state_information);
     }
@@ -120,7 +121,6 @@ public class MainActivity extends AppCompatActivity
       selectedStateFragment = new SelectedStateFragment();
       manager.beginTransaction().add(selectedStateFragment, "selected_state").commit();
     }
-
     if (selectedStateFragment.getFeature() != null) {
       mapController.highlightState(selectedStateFragment.getFeature());
       locationName.setText(
