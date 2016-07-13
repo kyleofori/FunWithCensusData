@@ -24,16 +24,20 @@ public class SplashActivity extends AppCompatActivity
 
   public static final String VAR_NAME = "Variable name";
   public static final String VAR_DESC = "Variable description";
+  public static final String CHECKED_ID = "Checked radio button ID";
   public static final String STATES_HASH_MAP = "States hash map";
 
   private static final int ERROR_DIALOG_REQUEST_CODE = 1;
   private static final String NO_PROVIDER_TAG = "No provider available";
+  private static final String BUTTON_ENABLED = "Continue to map button enabled";
+  private static final String BUTTON_TEXT = "Continue to map button text";
 
   private Button continueToTheMapButton;
   private TextView loadingText;
   private HashMap<String, String> hashMap;
   private String variableName;
   private String variableDescription;
+  private RadioGroup dataRadioGroup;
 
   private boolean retryProviderInstall;
 
@@ -45,9 +49,48 @@ public class SplashActivity extends AppCompatActivity
     loadingText = (TextView) findViewById(R.id.loading_text);
     continueToTheMapButton = (Button) findViewById(R.id.continue_button);
     continueToTheMapButton.setOnClickListener(this);
-    RadioGroup dataRadioGroup = (RadioGroup) findViewById(R.id.data_radiogroup);
+    continueToTheMapButton.setEnabled(false);
+    continueToTheMapButton.setText(R.string.select_topic);
+    if(Constants.ALL_FEATURES == null) {
+      showLoadingText();
+      new GetStateOutlinesTask().execute(this);
+    } else {
+      showContinueToMapButton();
+    }
+    dataRadioGroup = (RadioGroup) findViewById(R.id.data_radiogroup);
     dataRadioGroup.setOnCheckedChangeListener(this);
-    new GetStateOutlinesTask().execute(this);
+  }
+
+  @Override protected void onRestoreInstanceState(Bundle savedInstanceState) {
+    super.onRestoreInstanceState(savedInstanceState);
+    dataRadioGroup.check(savedInstanceState.getInt(CHECKED_ID));
+    continueToTheMapButton.setEnabled(savedInstanceState.getBoolean(BUTTON_ENABLED));
+    continueToTheMapButton.setText(savedInstanceState.getCharSequence(BUTTON_TEXT));
+    hashMap = (HashMap<String, String>) savedInstanceState.getSerializable(STATES_HASH_MAP);
+    if(Constants.ALL_FEATURES != null) {
+      showContinueToMapButton();
+    }
+  }
+
+  private void showContinueToMapButton() {
+    loadingText.setVisibility(View.GONE);
+    continueToTheMapButton.setVisibility(View.VISIBLE);
+  }
+
+  private void showLoadingText() {
+    loadingText.setVisibility(View.VISIBLE);
+    continueToTheMapButton.setVisibility(View.GONE);
+  }
+
+  @Override public void onSaveInstanceState(Bundle outState) {
+    super.onSaveInstanceState(outState);
+    int checkedRadioButtonId = dataRadioGroup.getCheckedRadioButtonId();
+    boolean continueToMapButtonEnabled = continueToTheMapButton.isEnabled();
+    CharSequence continueToMapButtonText = continueToTheMapButton.getText();
+    outState.putInt(CHECKED_ID, checkedRadioButtonId);
+    outState.putBoolean(BUTTON_ENABLED, continueToMapButtonEnabled);
+    outState.putCharSequence(BUTTON_TEXT, continueToMapButtonText);
+    outState.putSerializable(STATES_HASH_MAP, hashMap);
   }
 
   @Override protected void onPostResume() {
@@ -110,9 +153,8 @@ public class SplashActivity extends AppCompatActivity
 
   @Override public void onStateOutlinesReceived(ArrayList<Feature> features) {
     hashMap = createHashMap(features);
-    Constants.ALL_FEATURES = features;
-    loadingText.setVisibility(View.GONE);
-    continueToTheMapButton.setVisibility(View.VISIBLE);
+    Constants.ALL_FEATURES = features; //TODO: singleton pattern
+    showContinueToMapButton();
   }
 
   private HashMap<String, String> createHashMap(ArrayList<Feature> features) {

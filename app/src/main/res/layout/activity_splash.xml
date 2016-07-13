@@ -56,16 +56,12 @@
       android:textSize="24sp"
       android:textAllCaps="true"
       android:layout_gravity="center"
-      android:visibility="visible"
       />
   <Button
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:id="@+id/continue_button"
-      android:text="@string/select_topic"
-      android:enabled="false"
       android:layout_gravity="center"
-      android:visibility="gone"
       />
 
 
