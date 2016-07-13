@@ -12,6 +12,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import com.detroitlabs.kyleofori.funwithcensusdata.interfaces.StateOutlinesResponder;
 import com.detroitlabs.kyleofori.funwithcensusdata.model.Feature;
+import com.detroitlabs.kyleofori.funwithcensusdata.utils.Constants;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.security.ProviderInstaller;
 import java.util.ArrayList;
@@ -24,7 +25,6 @@ public class SplashActivity extends AppCompatActivity
   public static final String VAR_NAME = "Variable name";
   public static final String VAR_DESC = "Variable description";
   public static final String STATES_HASH_MAP = "States hash map";
-  public static ArrayList<Feature> ALL_FEATURES;
 
   private static final int ERROR_DIALOG_REQUEST_CODE = 1;
   private static final String NO_PROVIDER_TAG = "No provider available";
@@ -110,7 +110,7 @@ public class SplashActivity extends AppCompatActivity
 
   @Override public void onStateOutlinesReceived(ArrayList<Feature> features) {
     hashMap = createHashMap(features);
-    ALL_FEATURES = features;
+    Constants.ALL_FEATURES = features;
     loadingText.setVisibility(View.GONE);
     continueToTheMapButton.setVisibility(View.VISIBLE);
   }

@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity
     if (selectedStateFragment.getStatesHashMap() == null) {
       selectedStateFragment.setStatesHashMap((HashMap<String, String>) bundle.get(SplashActivity.STATES_HASH_MAP));
     }
-    selectedStateFragment.setAllFeatures(SplashActivity.ALL_FEATURES);
+    selectedStateFragment.setAllFeatures(Constants.ALL_FEATURES);
     selectedStateFragment.setFeaturesLoaded(true);
   }
 

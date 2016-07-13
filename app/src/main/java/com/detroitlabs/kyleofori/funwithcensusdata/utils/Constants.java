@@ -1,5 +1,8 @@
 package com.detroitlabs.kyleofori.funwithcensusdata.utils;
 
+import com.detroitlabs.kyleofori.funwithcensusdata.model.Feature;
+import java.util.ArrayList;
+
 public class Constants {
 
   private Constants() {
@@ -16,6 +19,7 @@ public class Constants {
   public static final String MULTIPOLYGON = "MultiPolygon";
 
   //    states
+  public static ArrayList<Feature> ALL_FEATURES;
 /*    public static final String ALABAMA = "01";
     public static final String ALASKA = "02";
     public static final String ARIZONA = "04";
